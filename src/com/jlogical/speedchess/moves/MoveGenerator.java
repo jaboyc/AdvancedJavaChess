@@ -3,9 +3,6 @@ package com.jlogical.speedchess.moves;
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.board.Board;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import static com.jlogical.speedchess.bitboard.Direction.*;
 import static com.jlogical.speedchess.board.Piece.QUEEN;
 
@@ -20,8 +17,8 @@ public class MoveGenerator {
      * @param legalOnly whether the moves should only be legal moves (will not result in check).
      * @return the list of all possible moves from the given board state.
      */
-    public static List<Move> generateMoves(Board board, boolean player, boolean legalOnly) {
-        List<Move> moves = new LinkedList<>();
+    public static Moveset generateMoves(Board board, boolean player, boolean legalOnly) {
+        Moveset moves = new Moveset();
 
         Bitboard pieces = board.getPieces(player); // Board of the current player's pieces.
         Bitboard enemyPieces = board.getPieces(!player); // Board of the enemy player's pieces.
@@ -41,29 +38,22 @@ public class MoveGenerator {
     /**
      * Adds a move to the list of moves. If [legalOnly], then checks to make sure the move is legal before adding it.
      */
-    private static void addMove(Board board, boolean player, List<Move> moves, boolean legalOnly, Move move) {
+    private static void addMove(Board board, boolean player, Moveset moves, boolean legalOnly, Move move) {
         if (legalOnly) {
             board.makeMove(move, player);
             if (!board.inCheck(player)) {
-                // Add capturing pieces to the beginning.
-                if (move.getCapturedPiece() != 0)
-                    moves.add(0, move);
-                else
-                    moves.add(move);
+                moves.addMove(move);
             }
             board.unmakeMove(player);
         } else {
-            if (move.getCapturedPiece() != 0)
-                moves.add(0, move);
-            else
-                moves.add(move);
+            moves.addMove(move);
         }
     }
 
     /**
      * Adds the pawn moves to the given list of moves.
      */
-    private static void addPawnMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addPawnMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard pawns = board.getPawns(player); // Get the bitboard of all the pawns.
         for (int i = 0; i < 64; i++) {
             if (pawns.get(i)) {
@@ -100,7 +90,7 @@ public class MoveGenerator {
     /**
      * Adds the rook moves to the given list of moves.
      */
-    private static void addRookMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addRookMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard rooks = board.getRooks(player); // Get the bitboard of all the rooks.
         for (int i = 0; i < 64; i++) {
             if (rooks.get(i)) {
@@ -159,7 +149,7 @@ public class MoveGenerator {
     /**
      * Adds the knight moves to the given list of moves.
      */
-    private static void addKnightMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addKnightMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard knights = board.getKnights(player); // Get the bitboard of all the knights.
         Bitboard notMine = pieces.not(); // Stores all valid locations for the knight to go.
         for (int i = 0; i < 64; i++) {
@@ -207,7 +197,7 @@ public class MoveGenerator {
     /**
      * Adds the bishop moves to the given list of moves.
      */
-    private static void addBishopMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addBishopMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard bishops = board.getBishops(player); // Get the bitboard of all the bishops.
         for (int i = 0; i < 64; i++) {
             if (bishops.get(i)) {
@@ -254,7 +244,7 @@ public class MoveGenerator {
     /**
      * Adds the queen moves to the given list of moves.
      */
-    private static void addQueenMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addQueenMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard queens = board.getQueen(player); // Get the bitboard of all the queen.
         for (int i = 0; i < 64; i++) {
             if (queens.get(i)) {
@@ -337,7 +327,7 @@ public class MoveGenerator {
     /**
      * Adds the king moves to the given list of moves.
      */
-    private static void addKingMoves(List<Move> moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
+    private static void addKingMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard king = board.getKing(player); // Get the bitboard of the king.
         Bitboard notMine = pieces.not(); // Stores all valid locations for the king to go.
         for (int i = 0; i < 64; i++) {

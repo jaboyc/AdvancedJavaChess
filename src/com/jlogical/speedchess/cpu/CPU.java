@@ -2,9 +2,9 @@ package com.jlogical.speedchess.cpu;
 
 import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
+import com.jlogical.speedchess.moves.Moveset;
 
 import java.awt.*;
-import java.util.List;
 
 /**
  * Handles the Minimax Alpha-Beta algorithm to determine the next move.
@@ -13,7 +13,7 @@ public class CPU {
 
     private static final boolean DEBUG = true; // Whether to output debug information as the CPU is thinking.
 
-    private static final int COMPLEXITY = 4; // The number of turns to look ahead to decide its next move.
+    private static final int COMPLEXITY = 5; // The number of turns to look ahead to decide its next move.
 
     private static int count = 0;
 
@@ -53,10 +53,10 @@ public class CPU {
      * @param maximizing the player that is maximizing the score.
      * @param layersLeft the number of layers left.
      * @param rootMove   the move that started this calculate chain.
-     * @param moves      the list of moves that it should calculate.
+     * @param moveset    the moveset that it should calculate.
      * @return the move-score with the most likelihood of being chosen.
      */
-    private static Pair<Move, Integer> calculate(Board board, boolean player, boolean maximizing, double layersLeft, Move rootMove, List<Move> moves, int alpha, int beta) {
+    private static Pair<Move, Integer> calculate(Board board, boolean player, boolean maximizing, double layersLeft, Move rootMove, Moveset moveset, int alpha, int beta) {
 
         if (layersLeft <= 0 || board.isCheckMate(player) || board.isCheckMate(!player) || board.isStaleMate(player) || board.isStaleMate(!player)) {
             count++;
@@ -67,7 +67,7 @@ public class CPU {
 
             Pair<Move, Integer> bestMove = new Pair<>(null, Integer.MIN_VALUE);
 
-            for (Move move : moves) {
+            for (Move move : moveset.getMoves()) {
                 board.makeMove(move, player);
 
                 double depth = board.inCheck(!player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
@@ -92,7 +92,7 @@ public class CPU {
 
             Pair<Move, Integer> worstMove = new Pair<>(null, Integer.MAX_VALUE);
 
-            for (Move move : moves) {
+            for (Move move : moveset.getMoves()) {
                 board.makeMove(move, !player);
 
                 double depth = board.inCheck(player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;

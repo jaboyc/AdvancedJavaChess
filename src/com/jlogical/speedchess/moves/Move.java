@@ -3,9 +3,6 @@ package com.jlogical.speedchess.moves;
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.board.Board;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * Represents a possible move a piece can make.
  */
@@ -28,8 +25,8 @@ public class Move {
     private boolean disableLeftCastle; // Whether this move disabled castling left.
     private int promotionPiece; // The piece the pawn was promoted to. 0 if none.
 
-    private List<List<Move>> nextMoves; // List of moves that are possible after this move. Essentially, a cache.
-    private List<List<Move>> nextLegalMoves; // List of legal moves that are posssible after this move. Essentially, a cache.
+    private Moveset[] nextMoves; // List of moves that are possible after this move. Essentially, a cache.
+    private Moveset[] nextLegalMoves; // List of legal moves that are posssible after this move. Essentially, a cache.
 
     /**
      * Creates a move that goes from [from] to [to] while capturing [capturedPiece].
@@ -74,33 +71,29 @@ public class Move {
     /**
      * @param board  the board to generate the moves for.
      * @param player the player to generate the moves for.
-     * @return the list of moves that can occur after this one. If not calculated yet, will do so.
+     * @return the moveset that can occur after this one. If not calculated yet, will do so.
      */
-    public List<Move> getNextMoves(Board board, boolean player) {
+    public Moveset getNextMoves(Board board, boolean player) {
         if (nextMoves == null) {
-            nextMoves = new ArrayList<>(2);
-            nextMoves.add(null);
-            nextMoves.add(null);
+            nextMoves = new Moveset[2];
         }
-        if (nextMoves.get(player ? 0 : 1) == null)
-            nextMoves.set(player ? 0 : 1, MoveGenerator.generateMoves(board, player, false));
-        return nextMoves.get(player ? 0 : 1);
+        if (nextMoves[player ? 0 : 1] == null)
+            nextMoves[player ? 0 : 1] = MoveGenerator.generateMoves(board, player, false);
+        return nextMoves[player ? 0 : 1];
     }
 
     /**
      * @param board  the board to generate the moves for.
      * @param player the player to generate the moves for.
-     * @return the list of legal moves that can occur after this one. If not calculated yet, will do so.
+     * @return the legal moveset that can occur after this one. If not calculated yet, will do so.
      */
-    public List<Move> getNextLegalMoves(Board board, boolean player) {
+    public Moveset getNextLegalMoves(Board board, boolean player) {
         if (nextLegalMoves == null) {
-            nextLegalMoves = new ArrayList<>(2);
-            nextLegalMoves.add(null);
-            nextLegalMoves.add(null);
+            nextLegalMoves = new Moveset[2];
         }
-        if (nextLegalMoves.get(player ? 0 : 1) == null)
-            nextLegalMoves.set(player ? 0 : 1, MoveGenerator.generateMoves(board, player, true));
-        return nextLegalMoves.get(player ? 0 : 1);
+        if (nextLegalMoves[player ? 0 : 1] == null)
+            nextLegalMoves[player ? 0 : 1] = MoveGenerator.generateMoves(board, player, true);
+        return nextLegalMoves[player ? 0 : 1];
     }
 
     /**

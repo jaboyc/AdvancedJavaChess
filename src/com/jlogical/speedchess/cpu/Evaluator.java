@@ -3,6 +3,7 @@ package com.jlogical.speedchess.cpu;
 import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
+import com.jlogical.speedchess.moves.Moveset;
 
 import java.util.HashMap;
 import java.util.List;
@@ -40,15 +41,15 @@ public class Evaluator {
         score += (board.getKing(player).count() - board.getKing(!player).count()) * 25000;
 
         if(!board.getHistory().isEmpty()){
-            List<Move> moves = board.getHistory().peek().getNextMoves(board, player);
-            List<Move> enemyMoves = board.getHistory().peek().getNextMoves(board, !player);
-            score += (moves.size() - enemyMoves.size()) * 20;
-            for(Move move : moves){
+            Moveset moves = board.getHistory().peek().getNextMoves(board, player);
+            Moveset enemyMoves = board.getHistory().peek().getNextMoves(board, !player);
+            score += (moves.getMoves().size() - enemyMoves.getMoves().size()) * 20;
+            for(Move move : moves.getMoves()){
                 if(move.getCapturedPiece() != 0){
                     score += 30;
                 }
             }
-            for(Move move : enemyMoves){
+            for(Move move : enemyMoves.getMoves()){
                 if(move.getCapturedPiece() != 0){
                     score -= 30;
                 }

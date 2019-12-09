@@ -3,7 +3,6 @@ package com.jlogical.speedchess.board;
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.cpu.Evaluator;
 import com.jlogical.speedchess.moves.Move;
-import com.jlogical.speedchess.moves.MoveGenerator;
 
 import java.util.List;
 import java.util.Stack;
@@ -335,16 +334,11 @@ public class Board {
      */
     public boolean inCheck(boolean player) {
         if (history.isEmpty()) return false;
-        List<Move> enemyMoves = history.peek().getNextMoves(this, !player);
-
-        // Find the player's king.
-        int i;
-        for (i = 0; i < 64; i++)
-            if (getKing(player).get(i)) break;
+        List<Move> enemyMoves = history.peek().getNextMoves(this, !player).getMoves();
 
         // Check if any of the enemy's move hit the king.
         for (Move move : enemyMoves) {
-            if (move.getTo() == i)
+            if (move.getCapturedPiece() == KING * (player ? 1 : -1))
                 return true;
         }
 
@@ -356,7 +350,7 @@ public class Board {
      * @return whether the given player is in check mate.
      */
     public boolean isCheckMate(boolean player) {
-        if(history.isEmpty()) return false;
+        if (history.isEmpty()) return false;
         return inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
@@ -365,7 +359,7 @@ public class Board {
      * @return whether the given player is in stale mate.
      */
     public boolean isStaleMate(boolean player) {
-        if(history.isEmpty()) return false;
+        if (history.isEmpty()) return false;
         return !inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
@@ -480,7 +474,7 @@ public class Board {
         output.append("     A   B   C   D   E   F   G   H\n");
 
         // Add scores
-        output.append("\n").append("               [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
+        output.append("\n").append("            [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
 
         return output.toString();
     }

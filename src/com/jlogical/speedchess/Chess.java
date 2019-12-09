@@ -88,7 +88,7 @@ public class Chess {
             Move move = new Move(board.getPieceBitboard(board.getPiece(fromPos)), fromPos, toPos, capturedPiece);
 
             // If the move is valid, return the move. Otherwise try again.
-            List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true);
+            List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true).getMoves();
             for (Move possibleMove : possibleMoves) {
                 if (possibleMove.similar(move)) {
                     return possibleMove;
@@ -174,7 +174,7 @@ public class Chess {
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(false, true);
+        Chess chess = new Chess(false, false);
         chess.play();
     }
 }
