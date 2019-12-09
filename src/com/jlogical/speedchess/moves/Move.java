@@ -18,8 +18,10 @@ public class Move {
     /**
      * These are special circumstances.
      */
-    private boolean kingCastle; // Whether the king castled king-side.
-    private boolean queenCastle; // Whether the queen castled queen-side.
+    private boolean rightCastle; // Whether this move was a castle to the right.
+    private boolean leftCastle; // Whether this move was a castle to the left.
+    private boolean disableRightCastle; // Whether this move disabled castling right.
+    private boolean disableLeftCastle; // Whether this move disabled castling left.
     private int promotionPiece; // The piece the pawn was promoted to. 0 if none.
 
     /**
@@ -36,8 +38,10 @@ public class Move {
         this.to = to;
         this.capturedPiece = capturedPiece;
 
-        kingCastle = false;
-        queenCastle = false;
+        rightCastle = false;
+        leftCastle = false;
+        disableRightCastle = false;
+        disableLeftCastle = false;
         promotionPiece = 0;
     }
 
@@ -50,6 +54,14 @@ public class Move {
      */
     public Move(Bitboard pieceBoard, int from, int to) {
         this(pieceBoard, from, to, 0);
+    }
+
+    /**
+     * @param move the move to compare with.
+     * @return whether the given move is similar to the current one. Similar means they go from the same source tile to the same destination tile.
+     */
+    public boolean similar(Move move){
+        return from == move.from && to == move.to;
     }
 
     /**
@@ -82,20 +94,40 @@ public class Move {
         return capturedPiece;
     }
 
-    public boolean isKingCastle() {
-        return kingCastle;
+    public boolean isRightCastle() {
+        return rightCastle;
     }
 
-    public void setKingCastle(boolean kingCastle) {
-        this.kingCastle = kingCastle;
+    public boolean isLeftCastle() {
+        return leftCastle;
     }
 
-    public boolean isQueenCastle() {
-        return queenCastle;
+    public Move setRightCastle(boolean rightCastle) {
+        this.rightCastle = rightCastle;
+        return this;
     }
 
-    public void setQueenCastle(boolean queenCastle) {
-        this.queenCastle = queenCastle;
+    public Move setLeftCastle(boolean leftCastle) {
+        this.leftCastle = leftCastle;
+        return this;
+    }
+
+    public boolean isDisableRightCastle() {
+        return disableRightCastle;
+    }
+
+    public Move setDisableRightCastle(boolean disableRightCastle) {
+        this.disableRightCastle = disableRightCastle;
+        return this;
+    }
+
+    public boolean isDisableLeftCastle() {
+        return disableLeftCastle;
+    }
+
+    public Move setDisableLeftCastle(boolean disableLeftCastle) {
+        this.disableLeftCastle = disableLeftCastle;
+        return this;
     }
 
     public int getPromotionPiece() {
@@ -114,7 +146,7 @@ public class Move {
     public boolean equals(Object obj) {
         if (obj instanceof Move) {
             Move m = (Move) obj;
-            return pieceBoard == m.pieceBoard && from == m.from && to == m.to && capturedPiece == m.capturedPiece && queenCastle == m.queenCastle && kingCastle == m.kingCastle && promotionPiece == m.promotionPiece;
+            return pieceBoard == m.pieceBoard && from == m.from && to == m.to && capturedPiece == m.capturedPiece && disableLeftCastle == m.disableLeftCastle && disableRightCastle == m.disableRightCastle && promotionPiece == m.promotionPiece;
         }
         return false;
     }

@@ -4,6 +4,7 @@ import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
+import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -46,16 +47,18 @@ public class Chess {
 
             // Make the next move.
             if (nextMove != null)
-                board.makeMove(nextMove);
+                board.makeMove(nextMove, currPlayer);
 
             // Swap the current player.
             currPlayer = !currPlayer;
         }
 
+        System.out.println(board);
+
         // Print the end condition.
-        if(board.isCheckMate(currPlayer)){
+        if (board.isCheckMate(currPlayer)) {
             System.out.println("===(CHECK MATE)===");
-        }else{
+        } else {
             System.out.println("===(STALE MATE)===");
         }
     }
@@ -75,8 +78,8 @@ public class Chess {
         while (true) {
 
             // Get the from position and to position.
-            int fromPos = getPosFromUserInput("Input Source Position: ");
-            int toPos = getPosFromUserInput("Input Destination Position: ");
+            int fromPos = getPosFromUserInput("Input Source Position: ", player);
+            int toPos = getPosFromUserInput("Input Destination Position: ", player);
 
             // Calculate the captured piece.
             int capturedPiece = board.getPiece(toPos);
@@ -85,11 +88,15 @@ public class Chess {
             Move move = new Move(board.getPieceBitboard(board.getPiece(fromPos)), fromPos, toPos, capturedPiece);
 
             // If the move is valid, return the move. Otherwise try again.
-            if (MoveGenerator.generateMoves(board, player, true).contains(move)) {
-                return move;
-            } else {
-                System.out.println("Invalid Move. Try Again.");
+            List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true);
+            for (Move possibleMove : possibleMoves) {
+                if (possibleMove.similar(move)) {
+                    return possibleMove;
+                }
             }
+
+            System.out.println("Invalid Move. Try Again.");
+
         }
     }
 
@@ -97,9 +104,10 @@ public class Chess {
      * Gets a position by prompting the user. Must be in the format of (file)(rank). Ex: e2, d6, etc...
      *
      * @param prompt the prompt to print.
+     * @param player the player whose inputs this is getting. Used for undoing moves.
      * @return the position the user chose (0-63).
      */
-    private int getPosFromUserInput(String prompt) {
+    private int getPosFromUserInput(String prompt, boolean player) {
 
         // Keep getting user input until its valid.
         while (true) {
@@ -111,8 +119,8 @@ public class Chess {
 
             // Handle special cases.
             if (input.equals("undo")) {
-                board.unmakeMove();
-                board.unmakeMove();
+                board.unmakeMove(!player);
+                board.unmakeMove(player);
                 System.out.println(board);
                 continue;
             } else if (input.equals("q") || input.equals("quit")) {

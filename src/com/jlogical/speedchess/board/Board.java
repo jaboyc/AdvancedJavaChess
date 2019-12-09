@@ -25,6 +25,13 @@ public class Board {
     private Bitboard[] queens;
     private Bitboard[] kings;
 
+    /**
+     * The following boolean arrays have 2 elements. [0] is white, [1] is black.
+     * These contain whether each player can castle right or left.
+     */
+    private boolean[] canCastleRight;
+    private boolean[] canCastleLeft;
+
     private Stack<Move> history; // History of moves performed on this board.
 
     /**
@@ -37,6 +44,9 @@ public class Board {
         bishops = new Bitboard[]{new Bitboard(), new Bitboard()};
         queens = new Bitboard[]{new Bitboard(), new Bitboard()};
         kings = new Bitboard[]{new Bitboard(), new Bitboard()};
+
+        canCastleRight = new boolean[]{true, true};
+        canCastleLeft = new boolean[]{true, true};
 
         history = new Stack<>();
 
@@ -109,6 +119,22 @@ public class Board {
      */
     public Bitboard getPieces(boolean player) {
         return Bitboard.or(getPawns(player), getRooks(player), getKnights(player), getBishops(player), getQueen(player), getKing(player));
+    }
+
+    /**
+     * @param player the player to look at.
+     * @return whether the given player can castle right.
+     */
+    public boolean canCastleRight(boolean player) {
+        return canCastleRight[player ? 0 : 1];
+    }
+
+    /**
+     * @param player the player to look at.
+     * @return whether the given player can castle left.
+     */
+    public boolean canCastleLeft(boolean player) {
+        return canCastleLeft[player ? 0 : 1];
     }
 
     /**
@@ -190,9 +216,10 @@ public class Board {
     /**
      * Performs the given move.
      *
-     * @param move the move to perform.
+     * @param move   the move to perform.
+     * @param player the player performing the move.
      */
-    public void makeMove(Move move) {
+    public void makeMove(Move move, boolean player) {
         history.push(move); // Add the move to the board's history.
 
         // Move the piece in its piece board.
@@ -204,12 +231,44 @@ public class Board {
             Bitboard capturedBitboard = getPieceBitboard(move.getCapturedPiece());
             capturedBitboard.clear(move.getTo());
         }
+
+        // Handle castling.
+        if (move.isRightCastle()) {
+            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
+
+            // Move the rook to the correct location.
+            if (player) {
+                rookBitboard.clear(7);
+                rookBitboard.set(5);
+            } else {
+                rookBitboard.clear(63);
+                rookBitboard.set(61);
+            }
+
+        } else if (move.isLeftCastle()) {
+            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
+
+            // Move the rook to the correct location.
+            if (player) {
+                rookBitboard.clear(0);
+                rookBitboard.set(3);
+            } else {
+                rookBitboard.clear(56);
+                rookBitboard.set(59);
+            }
+        }
+
+        // Handle disabling castling.
+        if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = false;
+        else if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
     }
 
     /**
      * Undoes the last move made.
+     *
+     * @param player the player unmaking the move
      */
-    public void unmakeMove() {
+    public void unmakeMove(boolean player) {
         Move lastMove = history.pop(); // Get the most-recently made move.
 
         // Unmove the piece in its piece board.
@@ -221,6 +280,35 @@ public class Board {
             Bitboard capturedBitboard = getPieceBitboard(lastMove.getCapturedPiece());
             capturedBitboard.set(lastMove.getTo());
         }
+
+        // Handle castling.
+        if (lastMove.isRightCastle()) {
+            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
+
+            // Move the rook back to its starting location.
+            if (player) {
+                rookBitboard.clear(5);
+                rookBitboard.set(7);
+            } else {
+                rookBitboard.clear(61);
+                rookBitboard.set(63);
+            }
+        } else if (lastMove.isLeftCastle()) {
+            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
+
+            // Move the rook back to its starting location.
+            if (player) {
+                rookBitboard.clear(3);
+                rookBitboard.set(0);
+            } else {
+                rookBitboard.clear(59);
+                rookBitboard.set(56);
+            }
+        }
+
+        // Handle disabling castling. Re-enable them.
+        if (lastMove.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = true;
+        if (lastMove.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
     }
 
     /**
