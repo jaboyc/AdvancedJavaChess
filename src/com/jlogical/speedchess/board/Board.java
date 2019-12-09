@@ -245,6 +245,22 @@ public class Board {
     }
 
     /**
+     * @param player the player to look at.
+     * @return whether the given player is in check mate.
+     */
+    public boolean isCheckMate(boolean player) {
+        return inCheck(player) && MoveGenerator.generateMoves(this, player, true).isEmpty();
+    }
+
+    /**
+     * @param player the player to look at.
+     * @return whether the given player is in stale mate.
+     */
+    public boolean isStaleMate(boolean player) {
+        return !inCheck(player) && MoveGenerator.generateMoves(this, player, true).isEmpty();
+    }
+
+    /**
      * Returns the bitboard that belongs to the player.
      *
      * @param bitboards the bitboard array. Use any of the pieces bitboard arrays.

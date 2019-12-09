@@ -4,7 +4,6 @@ import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
-import java.util.List;
 import java.util.Scanner;
 
 /**
@@ -23,12 +22,15 @@ public class Chess {
         this.players = players;
     }
 
+    /**
+     * Starts playing the chess game.
+     */
     public void play() {
 
         boolean currPlayer = true; // Whether the current player is white.
 
         // Repeatedly switch turns until checkmate or stalemate.
-        while (true) {
+        while (!board.isCheckMate(currPlayer) && !board.isStaleMate(currPlayer)) {
 
             // Print board information out.
             System.out.println(board);
@@ -49,6 +51,13 @@ public class Chess {
             // Swap the current player.
             currPlayer = !currPlayer;
         }
+
+        // Print the end condition.
+        if(board.isCheckMate(currPlayer)){
+            System.out.println("===(CHECK MATE)===");
+        }else{
+            System.out.println("===(STALE MATE)===");
+        }
     }
 
     /**
@@ -58,6 +67,9 @@ public class Chess {
      * @return the move the human inputted.
      */
     private Move humanMove(boolean player) {
+
+        if (board.inCheck(player))
+            System.out.println("   [CHECK]");
 
         // Keep asking for user input until they give a valid move.
         while (true) {
@@ -98,12 +110,12 @@ public class Chess {
             String input = scanner.nextLine();
 
             // Handle special cases.
-            if(input.equals("undo")){
+            if (input.equals("undo")) {
                 board.unmakeMove();
                 board.unmakeMove();
                 System.out.println(board);
                 continue;
-            }else if(input.equals("q") || input.equals("quit")){
+            } else if (input.equals("q") || input.equals("quit")) {
                 System.exit(0);
             }
 
@@ -114,7 +126,7 @@ public class Chess {
 
             // Get the file.
             char file = input.charAt(0);
-            if(file < 'a' || file > 'h'){
+            if (file < 'a' || file > 'h') {
                 System.out.println("Invalid file. Must be a letter between 'a' and 'h'. Try again.");
                 continue;
             }
@@ -127,7 +139,7 @@ public class Chess {
                 System.out.println("The second character must be a number!");
                 continue;
             }
-            if(rank < 1 || rank > 8){
+            if (rank < 1 || rank > 8) {
                 System.out.println("Invalid rank. Must be a number between 1 and 8. Try again.");
                 continue;
             }
