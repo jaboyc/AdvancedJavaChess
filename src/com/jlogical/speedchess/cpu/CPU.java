@@ -2,7 +2,6 @@ package com.jlogical.speedchess.cpu;
 
 import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
-import com.jlogical.speedchess.moves.MoveGenerator;
 
 import java.awt.*;
 import java.util.List;
@@ -14,7 +13,7 @@ public class CPU {
 
     private static final boolean DEBUG = true; // Whether to output debug information as the CPU is thinking.
 
-    private static final int COMPLEXITY = 5; // The number of turns to look ahead to decide its next move.
+    private static final int COMPLEXITY = 4; // The number of turns to look ahead to decide its next move.
 
     private static int count = 0;
 
@@ -29,7 +28,7 @@ public class CPU {
 
         count = 0;
 
-        Pair<Move, Integer> highestMove = calculate(board, player, true, COMPLEXITY, null, Integer.MIN_VALUE, Integer.MAX_VALUE);
+        Pair<Move, Integer> highestMove = calculate(board, player, true, COMPLEXITY, null, board.getHistory().peek().getNextLegalMoves(board, player), Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         // Check for null.
         if (highestMove == null || highestMove.getFirst() == null) {
@@ -53,9 +52,11 @@ public class CPU {
      * @param player     the player currently in the search tree.
      * @param maximizing the player that is maximizing the score.
      * @param layersLeft the number of layers left.
+     * @param rootMove   the move that started this calculate chain.
+     * @param moves      the list of moves that it should calculate.
      * @return the move-score with the most likelihood of being chosen.
      */
-    private static Pair<Move, Integer> calculate(Board board, boolean player, boolean maximizing, double layersLeft, Move rootMove, int alpha, int beta) {
+    private static Pair<Move, Integer> calculate(Board board, boolean player, boolean maximizing, double layersLeft, Move rootMove, List<Move> moves, int alpha, int beta) {
 
         if (layersLeft <= 0 || board.isCheckMate(player) || board.isCheckMate(!player) || board.isStaleMate(player) || board.isStaleMate(!player)) {
             count++;
@@ -63,16 +64,15 @@ public class CPU {
         }
 
         if (maximizing) {
-            List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true);
 
             Pair<Move, Integer> bestMove = new Pair<>(null, Integer.MIN_VALUE);
 
-            for (Move move : possibleMoves) {
+            for (Move move : moves) {
                 board.makeMove(move, player);
 
-                double depth = layersLeft - 1;
+                double depth = board.inCheck(!player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
 
-                Pair<Move, Integer> result = calculate(board, player, false, depth, rootMove == null ? move : rootMove, alpha, beta);
+                Pair<Move, Integer> result = calculate(board, player, false, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, !player), alpha, beta);
                 bestMove = bestMove.getSecond() >= result.getSecond() ? bestMove : result;
 
                 board.unmakeMove(player);
@@ -89,16 +89,15 @@ public class CPU {
 
             return bestMove;
         } else {
-            List<Move> possibleMoves = MoveGenerator.generateMoves(board, !player, true);
 
             Pair<Move, Integer> worstMove = new Pair<>(null, Integer.MAX_VALUE);
 
-            for (Move move : possibleMoves) {
+            for (Move move : moves) {
                 board.makeMove(move, !player);
 
-                double depth = layersLeft - 1;
+                double depth = board.inCheck(player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
 
-                Pair<Move, Integer> result = calculate(board, player, true, depth, rootMove == null ? move : rootMove, alpha, beta);
+                Pair<Move, Integer> result = calculate(board, player, true, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, player), alpha, beta);
                 worstMove = worstMove.getSecond() <= result.getSecond() ? worstMove : result;
 
                 board.unmakeMove(!player);

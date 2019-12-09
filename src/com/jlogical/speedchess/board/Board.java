@@ -1,6 +1,7 @@
 package com.jlogical.speedchess.board;
 
 import com.jlogical.speedchess.bitboard.Bitboard;
+import com.jlogical.speedchess.cpu.Evaluator;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
@@ -263,7 +264,7 @@ public class Board {
         else if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
 
         // Handle pawn promotion.
-        if(move.getPromotionPiece() != 0){
+        if (move.getPromotionPiece() != 0) {
 
             // Remove the piece and replace it with the given promoted piece.
             move.getPieceBoard().clear(move.getTo());
@@ -278,6 +279,8 @@ public class Board {
      */
     public void unmakeMove(boolean player) {
         Move lastMove = history.pop(); // Get the most-recently made move.
+
+        lastMove.clearCache();
 
         // Unmove the piece in its piece board.
         lastMove.getPieceBoard().clear(lastMove.getTo());
@@ -319,7 +322,7 @@ public class Board {
         if (lastMove.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
 
         // Handle pawn promotion.
-        if(lastMove.getPromotionPiece() != 0){
+        if (lastMove.getPromotionPiece() != 0) {
 
             // Remove the added piece.
             getPieceBitboard(lastMove.getPromotionPiece()).clear(lastMove.getTo());
@@ -331,7 +334,8 @@ public class Board {
      * @return whether the given player is in check.
      */
     public boolean inCheck(boolean player) {
-        List<Move> enemyMoves = MoveGenerator.generateMoves(this, !player, false);
+        if (history.isEmpty()) return false;
+        List<Move> enemyMoves = history.peek().getNextMoves(this, !player);
 
         // Find the player's king.
         int i;
@@ -352,7 +356,8 @@ public class Board {
      * @return whether the given player is in check mate.
      */
     public boolean isCheckMate(boolean player) {
-        return inCheck(player) && MoveGenerator.generateMoves(this, player, true).isEmpty();
+        if(history.isEmpty()) return false;
+        return inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
     /**
@@ -360,7 +365,8 @@ public class Board {
      * @return whether the given player is in stale mate.
      */
     public boolean isStaleMate(boolean player) {
-        return !inCheck(player) && MoveGenerator.generateMoves(this, player, true).isEmpty();
+        if(history.isEmpty()) return false;
+        return !inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
     /**
@@ -427,6 +433,10 @@ public class Board {
         kings[1].set(4, 7);
     }
 
+    public Stack<Move> getHistory() {
+        return history;
+    }
+
     /**
      * @return the String representation of the board.
      */
@@ -469,6 +479,15 @@ public class Board {
         // Add the col coordinates.
         output.append("     A   B   C   D   E   F   G   H\n");
 
+        // Add scores
+        output.append("\n").append("               [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
+
         return output.toString();
+    }
+
+    @Override
+    public int hashCode() {
+        // Calculate the Zobrist key of the board.
+        return super.hashCode();
     }
 }

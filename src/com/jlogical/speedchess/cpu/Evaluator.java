@@ -4,12 +4,15 @@ import com.jlogical.speedchess.board.Board;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
+import java.util.HashMap;
 import java.util.List;
 
 /**
  * Handles evaluating the score of a board.
  */
 public class Evaluator {
+
+    private static HashMap<Board, Integer> scoreHash = new HashMap<>(); // Stores a hash of every board to its score.
 
     /**
      * Evaluates the given board for the given player.
@@ -19,6 +22,10 @@ public class Evaluator {
      * @return the score of the player.
      */
     public static int evaluate(Board board, boolean player) {
+
+        // Return the hashed score if it exists.
+       // Integer hashedScore = scoreHash.get(board);
+        //if(hashedScore != null) return hashedScore;
 
         int score = 0;
 
@@ -32,19 +39,23 @@ public class Evaluator {
         score += (board.getQueen(player).count() - board.getQueen(!player).count()) * 900;
         score += (board.getKing(player).count() - board.getKing(!player).count()) * 25000;
 
-        List<Move> moves = MoveGenerator.generateMoves(board, player, false);
-        List<Move> enemyMoves = MoveGenerator.generateMoves(board, !player, false);
-        score += (moves.size() - enemyMoves.size()) * 20;
-        for(Move move : moves){
-            if(move.getCapturedPiece() != 0){
-                score += 30;
+        if(!board.getHistory().isEmpty()){
+            List<Move> moves = board.getHistory().peek().getNextMoves(board, player);
+            List<Move> enemyMoves = board.getHistory().peek().getNextMoves(board, !player);
+            score += (moves.size() - enemyMoves.size()) * 20;
+            for(Move move : moves){
+                if(move.getCapturedPiece() != 0){
+                    score += 30;
+                }
+            }
+            for(Move move : enemyMoves){
+                if(move.getCapturedPiece() != 0){
+                    score -= 30;
+                }
             }
         }
-        for(Move move : enemyMoves){
-            if(move.getCapturedPiece() != 0){
-                score -= 30;
-            }
-        }
+
+        //scoreHash.put(board, score);
 
         return score;
     }

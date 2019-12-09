@@ -45,11 +45,18 @@ public class MoveGenerator {
         if (legalOnly) {
             board.makeMove(move, player);
             if (!board.inCheck(player)) {
-                moves.add(move);
+                // Add capturing pieces to the beginning.
+                if (move.getCapturedPiece() != 0)
+                    moves.add(0, move);
+                else
+                    moves.add(move);
             }
             board.unmakeMove(player);
         } else {
-            moves.add(move);
+            if (move.getCapturedPiece() != 0)
+                moves.add(0, move);
+            else
+                moves.add(move);
         }
     }
 
@@ -106,8 +113,8 @@ public class MoveGenerator {
                     willDisableCastleRight = board.canCastleRight(true) && i == 7;
                     willDisableCastleLeft = board.canCastleLeft(true) && i == 0;
                 } else {
-                    willDisableCastleRight = board.canCastleRight(true) && i == 63;
-                    willDisableCastleLeft = board.canCastleLeft(true) && i == 56;
+                    willDisableCastleRight = board.canCastleRight(false) && i == 63;
+                    willDisableCastleLeft = board.canCastleLeft(false) && i == 56;
                 }
 
                 // NORTH
@@ -215,7 +222,7 @@ public class MoveGenerator {
                 }
 
                 // SOUTH EAST
-                for (int j = i + SOUTH_EAST; j >= 0 && j % 8 != 0; j += SOUTH_EAST) {
+                for (int j = i + SOUTH_EAST; j >= 0 && (j + 8) % 8 != 0; j += SOUTH_EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(bishops, i, j));
                     else if (enemyPieces.get(j)) {
                         addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)));
