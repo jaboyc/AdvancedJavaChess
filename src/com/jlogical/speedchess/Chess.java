@@ -1,6 +1,7 @@
 package com.jlogical.speedchess;
 
 import com.jlogical.speedchess.board.Board;
+import com.jlogical.speedchess.cpu.CPU;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
@@ -35,7 +36,6 @@ public class Chess {
 
             // Print board information out.
             System.out.println(board);
-            System.out.println(MoveGenerator.generateMoves(board, currPlayer, true));
 
             // Get the next move.
             Move nextMove;
@@ -164,17 +164,17 @@ public class Chess {
     }
 
     /**
-     * Uses NegaMax Alpha-Beta pruning to generate the next move.
+     * Uses Minimax Alpha-Beta pruning to generate the next move.
      *
      * @param player whether the current player is white.
      * @return the move the cpu chose.
      */
     private Move cpuMove(boolean player) {
-        return null;
+        return CPU.calculateNextMove(board, player);
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(false, false);
+        Chess chess = new Chess(false, true);
         chess.play();
     }
 }
