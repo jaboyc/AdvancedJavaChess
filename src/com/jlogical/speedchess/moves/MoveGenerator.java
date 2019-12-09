@@ -7,6 +7,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import static com.jlogical.speedchess.bitboard.Direction.*;
+import static com.jlogical.speedchess.board.Piece.QUEEN;
 
 /**
  * Generates all possible moves from a given board.
@@ -61,27 +62,29 @@ public class MoveGenerator {
             if (pawns.get(i)) {
                 // Since white and black have different directions for pawns, have separate cases for each.
                 if (player) {
+                    int promotionPiece = i >= 48 ? QUEEN : 0; // Promote to queen if possible.
                     if (empty.get(i + NORTH)) {
-                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH)); // Move forward one spot if empty.
+                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH).setPromotionPiece(promotionPiece)); // Move forward one spot if empty.
                         if (i >= 8 && i < 16 && empty.get(i + NORTH + NORTH))
                             addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH + NORTH)); // Move forward two spots if on second row and empty
                     }
                     if ((i + NORTH_WEST + 7) % 8 != 0 && enemyPieces.get(i + NORTH_WEST)) // Attack to the left if an enemy exists there.
-                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_WEST, board.getPiece(i + NORTH_WEST)));
+                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_WEST, board.getPiece(i + NORTH_WEST)).setPromotionPiece(promotionPiece));
 
                     if ((i + NORTH_EAST) % 8 != 0 && enemyPieces.get(i + NORTH_EAST)) // Attack to the right if an enemy exists there.
-                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_EAST, board.getPiece(i + NORTH_EAST)));
+                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_EAST, board.getPiece(i + NORTH_EAST)).setPromotionPiece(promotionPiece));
                 } else {
+                    int promotionPiece = i < 16 ? -QUEEN : 0; // Promote to queen if possible.
                     if (empty.get(i + SOUTH)) {
-                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH)); // Move forward one spot if empty.
+                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH).setPromotionPiece(promotionPiece)); // Move forward one spot if empty.
                         if (i >= 48 && i < 56 && empty.get(i + SOUTH + SOUTH))
                             addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH + SOUTH)); // Move forward two spots if on second row and empty
                     }
                     if ((i + SOUTH_WEST) % 8 != 0 && enemyPieces.get(i + SOUTH_EAST)) // Attack to the left if an enemy exists there.
-                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_EAST, board.getPiece(i + SOUTH_EAST)));
+                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_EAST, board.getPiece(i + SOUTH_EAST)).setPromotionPiece(promotionPiece));
 
                     if ((i + SOUTH_EAST + 7) % 8 != 0 && enemyPieces.get(i + SOUTH_WEST)) // Attack to the right if an enemy exists there.
-                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_WEST, board.getPiece(i + SOUTH_WEST)));
+                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_WEST, board.getPiece(i + SOUTH_WEST)).setPromotionPiece(promotionPiece));
                 }
             }
         }

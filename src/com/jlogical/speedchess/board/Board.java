@@ -261,6 +261,14 @@ public class Board {
         // Handle disabling castling.
         if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = false;
         else if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
+
+        // Handle pawn promotion.
+        if(move.getPromotionPiece() != 0){
+
+            // Remove the piece and replace it with the given promoted piece.
+            move.getPieceBoard().clear(move.getTo());
+            getPieceBitboard(move.getPromotionPiece()).set(move.getTo());
+        }
     }
 
     /**
@@ -309,6 +317,13 @@ public class Board {
         // Handle disabling castling. Re-enable them.
         if (lastMove.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = true;
         if (lastMove.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
+
+        // Handle pawn promotion.
+        if(lastMove.getPromotionPiece() != 0){
+
+            // Remove the added piece.
+            getPieceBitboard(lastMove.getPromotionPiece()).clear(lastMove.getTo());
+        }
     }
 
     /**

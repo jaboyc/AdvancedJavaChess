@@ -134,8 +134,9 @@ public class Move {
         return promotionPiece;
     }
 
-    public void setPromotionPiece(int promotionPiece) {
+    public Move setPromotionPiece(int promotionPiece) {
         this.promotionPiece = promotionPiece;
+        return this;
     }
 
     public String toString() {
