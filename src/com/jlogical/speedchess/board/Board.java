@@ -20,12 +20,12 @@ public class Board {
      * The following Bitboards arrays have 2 elements. board[0] is white, board[1] is black.
      * These bitboards contain the positions of all the types of pieces for each player.
      */
-    private Bitboard[] pawns;
-    private Bitboard[] rooks;
-    private Bitboard[] knights;
-    private Bitboard[] bishops;
-    private Bitboard[] queens;
-    private Bitboard[] kings;
+    private long[] pawns;
+    private long[] rooks;
+    private long[] knights;
+    private long[] bishops;
+    private long[] queens;
+    private long[] kings;
 
     /**
      * The following boolean arrays have 2 elements. [0] is white, [1] is black.
@@ -40,12 +40,12 @@ public class Board {
      * Creates a new board. Generates all bitboards as well.
      */
     public Board() {
-        pawns = new Bitboard[]{new Bitboard(), new Bitboard()};
-        rooks = new Bitboard[]{new Bitboard(), new Bitboard()};
-        knights = new Bitboard[]{new Bitboard(), new Bitboard()};
-        bishops = new Bitboard[]{new Bitboard(), new Bitboard()};
-        queens = new Bitboard[]{new Bitboard(), new Bitboard()};
-        kings = new Bitboard[]{new Bitboard(), new Bitboard()};
+        pawns = new long[]{0L, 0L};
+        rooks = new long[]{0L, 0L};
+        knights = new long[]{0L, 0L};
+        bishops = new long[]{0L, 0L};
+        queens = new long[]{0L, 0L};
+        kings = new long[]{0L, 0L};
 
         canCastleRight = new boolean[]{true, true};
         canCastleLeft = new boolean[]{true, true};
@@ -61,7 +61,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the pawn bitboard that belongs to the player.
      */
-    public Bitboard getPawns(boolean player) {
+    public long getPawns(boolean player) {
         return getPlayerBitboard(pawns, player);
     }
 
@@ -71,7 +71,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the rook bitboard that belongs to the player.
      */
-    public Bitboard getRooks(boolean player) {
+    public long getRooks(boolean player) {
         return getPlayerBitboard(rooks, player);
     }
 
@@ -81,7 +81,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the knight bitboard that belongs to the player.
      */
-    public Bitboard getKnights(boolean player) {
+    public long getKnights(boolean player) {
         return getPlayerBitboard(knights, player);
     }
 
@@ -91,7 +91,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the bishop bitboard that belongs to the player.
      */
-    public Bitboard getBishops(boolean player) {
+    public long getBishops(boolean player) {
         return getPlayerBitboard(bishops, player);
     }
 
@@ -101,7 +101,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the queen bitboard that belongs to the player.
      */
-    public Bitboard getQueen(boolean player) {
+    public long getQueen(boolean player) {
         return getPlayerBitboard(queens, player);
     }
 
@@ -111,7 +111,7 @@ public class Board {
      * @param player whether the player is white.
      * @return the king bitboard that belongs to the player.
      */
-    public Bitboard getKing(boolean player) {
+    public long getKing(boolean player) {
         return getPlayerBitboard(kings, player);
     }
 
@@ -119,8 +119,8 @@ public class Board {
      * @param player whether the player is white.
      * @return the intersection of all the pieces of the given player.
      */
-    public Bitboard getPieces(boolean player) {
-        return Bitboard.or(getPawns(player), getRooks(player), getKnights(player), getBishops(player), getQueen(player), getKing(player));
+    public long getPieces(boolean player) {
+        return getPawns(player) | getRooks(player) | getKnights(player) | getBishops(player) | getQueen(player) | getKing(player);
     }
 
     /**
@@ -142,8 +142,8 @@ public class Board {
     /**
      * @return a bitboard of all the empty tiles.
      */
-    public Bitboard getEmptyTiles() {
-        return Bitboard.or(getPieces(true), getPieces(false)).not();
+    public long getEmptyTiles() {
+        return ~(getPieces(true) | getPieces(false));
     }
 
     /**
@@ -153,18 +153,18 @@ public class Board {
      * @return the piece. 0 if none present.
      */
     public int getPiece(int pos) {
-        if (pawns[0].get(pos)) return PAWN;
-        if (pawns[1].get(pos)) return -PAWN;
-        if (rooks[0].get(pos)) return ROOK;
-        if (rooks[1].get(pos)) return -ROOK;
-        if (knights[0].get(pos)) return KNIGHT;
-        if (knights[1].get(pos)) return -KNIGHT;
-        if (bishops[0].get(pos)) return BISHOP;
-        if (bishops[1].get(pos)) return -BISHOP;
-        if (queens[0].get(pos)) return QUEEN;
-        if (queens[1].get(pos)) return -QUEEN;
-        if (kings[0].get(pos)) return KING;
-        if (kings[1].get(pos)) return -KING;
+        if (Bitboard.get(pawns[0],pos)) return PAWN;
+        if (Bitboard.get(pawns[1],pos)) return -PAWN;
+        if (Bitboard.get(rooks[0],pos)) return ROOK;
+        if (Bitboard.get(rooks[1],pos)) return -ROOK;
+        if (Bitboard.get(knights[0],pos)) return KNIGHT;
+        if (Bitboard.get(knights[1],pos)) return -KNIGHT;
+        if (Bitboard.get(bishops[0],pos)) return BISHOP;
+        if (Bitboard.get(bishops[1],pos)) return -BISHOP;
+        if (Bitboard.get(queens[0],pos)) return QUEEN;
+        if (Bitboard.get(queens[1],pos)) return -QUEEN;
+        if (Bitboard.get(kings[0],pos)) return KING;
+        if (Bitboard.get(kings[1],pos)) return -KING;
         return 0;
     }
 
@@ -183,7 +183,7 @@ public class Board {
      * @param bitboard the bitboard to evaluate.
      * @return the piece type that is in the bitboard.
      */
-    public int getPieceFromBitboard(Bitboard bitboard) {
+    public int getPieceFromBitboard(long bitboard) {
         if (pawns[0] == bitboard) return PAWN;
         if (pawns[1] == bitboard) return -PAWN;
         if (rooks[0] == bitboard) return ROOK;
@@ -205,7 +205,7 @@ public class Board {
      * @param piece the piece whose Bitboard to get.
      * @return the Bitboard.
      */
-    public Bitboard getPieceBitboard(int piece) {
+    public long getPieceBitboard(int piece) {
         switch (piece) {
             case PAWN:
                 return pawns[0];
@@ -232,7 +232,7 @@ public class Board {
             case -KING:
                 return kings[1];
         }
-        return null;
+        return 0;
     }
 
     /**
@@ -400,7 +400,7 @@ public class Board {
      * @param player    whether the player is white.
      * @return the bitboard that belongs to the player.
      */
-    private Bitboard getPlayerBitboard(Bitboard[] bitboards, boolean player) {
+    private long getPlayerBitboard(long[] bitboards, boolean player) {
         return bitboards[player ? 0 : 1];
     }
 

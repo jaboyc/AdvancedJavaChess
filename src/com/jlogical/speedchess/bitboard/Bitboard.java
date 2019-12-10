@@ -1,29 +1,11 @@
 package com.jlogical.speedchess.bitboard;
 
 /**
- * Represents an 8x8 grid of 1s or 0s. Used in a variety of ways.
+ * Represents an 8x8 grid of 1s or 0s. This class contains helper methods to use them easily.
  */
 public class Bitboard {
 
-    private long board; // The internal representation is a 64-bit long.
-
-    public Bitboard() {
-        board = 0;
-    }
-
-    /**
-     * @return the value of the bitboard.
-     */
-    public long val(){
-        return board;
-    }
-
-    /**
-     * Sets the value of the board to the given value.
-     * @param value the value to set the board to.
-     */
-    public void setValue(long value){
-        board = value;
+    private Bitboard() {
     }
 
     /**
@@ -32,7 +14,7 @@ public class Bitboard {
      * @param pos the position to look at (0-255)
      * @return the value at the position.
      */
-    public boolean get(int pos) {
+    public static boolean get(long board, int pos) {
         return ((board >> pos) & 1) == 1;
     }
 
@@ -43,8 +25,8 @@ public class Bitboard {
      * @param y the y position (0-7)
      * @return the value at the position.
      */
-    public boolean get(int x, int y) {
-        return get(y * 8 + x);
+    public static boolean get(long board, int x, int y) {
+        return get(board, y * 8 + x);
     }
 
     /**
@@ -53,12 +35,12 @@ public class Bitboard {
      * @param pos   the position to set (0-63)
      * @param value the value to set it to.
      */
-    public Bitboard set(int pos, boolean value) {
+    public static long set(long board, int pos, boolean value) {
         if (value)
             board |= (1L << pos);
         else
             board &= ~(1L << pos);
-        return this;
+        return board;
     }
 
     /**
@@ -66,8 +48,8 @@ public class Bitboard {
      *
      * @param pos the position to set.
      */
-    public Bitboard set(int pos) {
-        return set(pos, true);
+    public static long set(long board, int pos) {
+        return set(board, pos, true);
     }
 
     /**
@@ -77,8 +59,8 @@ public class Bitboard {
      * @param y     the y position (0-7)
      * @param value 1 or 0
      */
-    public Bitboard set(int x, int y, boolean value) {
-        return set(y * 8 + x, value);
+    public static long set(long board, int x, int y, boolean value) {
+        return set(board, y * 8 + x, value);
     }
 
     /**
@@ -87,8 +69,8 @@ public class Bitboard {
      * @param x the x position (0-7)
      * @param y the y position (0-7)
      */
-    public Bitboard set(int x, int y) {
-        return set(x, y, true);
+    public static long set(long board, int x, int y) {
+        return set(board, x, y, true);
     }
 
     /**
@@ -97,99 +79,28 @@ public class Bitboard {
      * @param x the x position (0-7)
      * @param y the y position (0-7)
      */
-    public Bitboard clear(int x, int y) {
-        return set(x, y, false);
+    public static long clear(long board, int x, int y) {
+        return set(board, x, y, false);
     }
 
     /**
      * Sets the given position to 0.
+     *
      * @param pos the position to clear. (0-63)
      */
-    public Bitboard clear(int pos){
-        return set(pos, false);
-    }
-
-    /**
-     * Negates the board by flipping all the bits.
-     */
-    public Bitboard not() {
-        Bitboard bitboard = new Bitboard();
-        bitboard.board = ~board;
-        return bitboard;
+    public static long clear(long board, int pos) {
+        return set(board, pos, false);
     }
 
     /**
      * @return the number of bits that are 1.
      */
-    public int count() {
+    public static int count(long board) {
         int count = 0;
         for (int i = 0; i < 64; i++) {
-            if (get(i)) count++;
+            if (get(board, i)) count++;
         }
         return count;
-    }
-
-
-    /**
-     * Returns the intersection between two bitboards.
-     *
-     * @param b1 the first bitboard.
-     * @param b2 the second bitboard.
-     * @return the intersection.
-     */
-    public static Bitboard and(Bitboard b1, Bitboard b2) {
-        Bitboard output = new Bitboard();
-
-        output.board = b1.board & b2.board;
-
-        return output;
-    }
-
-    /**
-     * Returns the intersection between an n number of bitboards.
-     *
-     * @param boards the boards to intersect.
-     * @return the intersection.
-     */
-    public static Bitboard and(Bitboard... boards) {
-        Bitboard output = new Bitboard();
-        output.board = Long.MAX_VALUE;
-
-        for (Bitboard b : boards) {
-            output.board &= b.board;
-        }
-
-        return output;
-    }
-
-    /**
-     * Returns the union of two bitboards.
-     *
-     * @param b1 the first bitboard.
-     * @param b2 the second bitboard.
-     * @return the union.
-     */
-    public static Bitboard or(Bitboard b1, Bitboard b2) {
-        Bitboard output = new Bitboard();
-
-        output.board = b1.board | b2.board;
-        return output;
-    }
-
-    /**
-     * Returns the union of n bitboards.
-     *
-     * @param boards the boards to union.
-     * @return the union.
-     */
-    public static Bitboard or(Bitboard... boards) {
-        Bitboard output = new Bitboard();
-
-        for (Bitboard b : boards) {
-            output.board |= b.board;
-        }
-
-        return output;
     }
 
     /**
@@ -207,19 +118,5 @@ public class Bitboard {
         }
 
         return builder.toString();
-    }
-
-    /**
-     * Returns whether the 'board' of another Bitboard is equal to this one.
-     *
-     * @param obj the object to compare.
-     * @return whether they are equal.
-     */
-    public boolean equals(Object obj) {
-        if (obj instanceof Bitboard) {
-            Bitboard b = (Bitboard) obj;
-            return board == b.board;
-        }
-        return false;
     }
 }
