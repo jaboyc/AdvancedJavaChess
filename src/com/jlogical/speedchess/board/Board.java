@@ -2,7 +2,9 @@ package com.jlogical.speedchess.board;
 
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.cpu.Evaluator;
+import com.jlogical.speedchess.cpu.ZobristKey;
 import com.jlogical.speedchess.moves.Move;
+import com.jlogical.speedchess.moves.MoveGenerator;
 
 import java.util.List;
 import java.util.Stack;
@@ -32,7 +34,7 @@ public class Board {
     private boolean[] canCastleRight;
     private boolean[] canCastleLeft;
 
-    private Stack<Move> history; // History of moves performed on this board.
+    private Stack<Move> history; // History of previous moves.
 
     /**
      * Creates a new board. Generates all bitboards as well.
@@ -240,6 +242,7 @@ public class Board {
      * @param player the player performing the move.
      */
     public void makeMove(Move move, boolean player) {
+
         history.push(move); // Add the move to the board's history.
 
         // Move the piece in its piece board.
@@ -279,16 +282,22 @@ public class Board {
         }
 
         // Handle disabling castling.
-        if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = false;
-        if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
+        if (move.isDisableLeftCastle()) {
+            canCastleLeft[player ? 0 : 1] = false;
+        }
+        if (move.isDisableRightCastle()) {
+            canCastleRight[player ? 0 : 1] = false;
+        }
 
         // Handle pawn promotion.
         if (move.getPromotionPiece() != 0) {
 
             // Remove the piece and replace it with the given promoted piece.
             move.getPieceBoard().clear(move.getTo());
+
             getPieceBitboard(move.getPromotionPiece()).set(move.getTo());
         }
+
     }
 
     /**
@@ -297,6 +306,7 @@ public class Board {
      * @param player the player unmaking the move
      */
     public void unmakeMove(boolean player) {
+
         Move lastMove = history.pop(); // Get the most-recently made move.
 
         lastMove.clearCache();
@@ -495,7 +505,7 @@ public class Board {
 
         // Add scores
         output.append("\n").append("            [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
-
+        output.append("\n").append(MoveGenerator.generateMoves(this, true, true).getMoves());
         return output.toString();
     }
 }

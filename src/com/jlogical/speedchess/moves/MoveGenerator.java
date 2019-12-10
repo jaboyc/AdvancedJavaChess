@@ -2,6 +2,9 @@ package com.jlogical.speedchess.moves;
 
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.board.Board;
+import com.jlogical.speedchess.cpu.ZobristKey;
+
+import java.util.HashMap;
 
 import static com.jlogical.speedchess.bitboard.Direction.*;
 import static com.jlogical.speedchess.board.Piece.QUEEN;
@@ -11,6 +14,8 @@ import static com.jlogical.speedchess.board.Piece.QUEEN;
  */
 public class MoveGenerator {
 
+    private static HashMap<Long, Moveset> moveHash = new HashMap<>(1000); // Hash map of all the moves that have already been calculated for every Zobrist Key.
+
     /**
      * @param board     the board to generate moves from.
      * @param player    the player to generate moves from.
@@ -18,6 +23,11 @@ public class MoveGenerator {
      * @return the list of all possible moves from the given board state.
      */
     public static Moveset generateMoves(Board board, boolean player, boolean legalOnly) {
+        long key = ZobristKey.getKeyForBoard(board, player);
+        if(moveHash.containsKey(key)){
+            return moveHash.get(key);
+        }
+
         Moveset moves = new Moveset();
 
         Bitboard pieces = board.getPieces(player); // Board of the current player's pieces.
@@ -32,6 +42,11 @@ public class MoveGenerator {
         addQueenMoves(moves, board, pieces, enemyPieces, empty, player, legalOnly);
         addKingMoves(moves, board, pieces, enemyPieces, empty, player, legalOnly);
 
+        if(moveHash.size() >= 1000){
+            moveHash.remove(moveHash.keySet().iterator().next());
+        }
+        moveHash.put(key, moves);
+
         return moves;
     }
 
@@ -39,14 +54,18 @@ public class MoveGenerator {
      * Adds a move to the list of moves. If [legalOnly], then checks to make sure the move is legal before adding it.
      */
     private static void addMove(Board board, boolean player, Moveset moves, boolean legalOnly, Move move) {
-        if (legalOnly) {
-            board.makeMove(move, player);
-            if (!board.inCheck(player)) {
+        if (move.isDefending())
+            moves.addDefence(move);
+        else {
+            if (legalOnly) {
+                board.makeMove(move, player);
+                if (!board.inCheck(player)) {
+                    moves.addMove(move);
+                }
+                board.unmakeMove(player);
+            } else {
                 moves.addMove(move);
             }
-            board.unmakeMove(player);
-        } else {
-            moves.addMove(move);
         }
     }
 
@@ -375,7 +394,7 @@ public class MoveGenerator {
                     addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + NORTH_WEST;
-                if (i < 56 && i % 8 !=  0)
+                if (i < 56 && i % 8 != 0)
                     addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 /*

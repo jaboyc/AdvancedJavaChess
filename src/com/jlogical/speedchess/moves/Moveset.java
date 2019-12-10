@@ -25,14 +25,8 @@ public class Moveset {
      * @param move the move to add.
      */
     public void addMove(Move move) {
-        if (move.isDefending()) {
-            addDefence(move);
-        } else {
-            if (move.getCapturedPiece() != 0)
-                moves.add(0, move);
-            else
-                moves.add(move);
-        }
+        if (move.getCapturedPiece() != 0) moves.add(0, move);
+        else moves.add(move);
     }
 
     /**

@@ -12,6 +12,21 @@ public class Bitboard {
     }
 
     /**
+     * @return the value of the bitboard.
+     */
+    public long val(){
+        return board;
+    }
+
+    /**
+     * Sets the value of the board to the given value.
+     * @param value the value to set the board to.
+     */
+    public void setValue(long value){
+        board = value;
+    }
+
+    /**
      * Returns the value at the given position
      *
      * @param pos the position to look at (0-255)
