@@ -178,6 +178,26 @@ public class Board {
     }
 
     /**
+     * @param bitboard the bitboard to evaluate.
+     * @return the piece type that is in the bitboard.
+     */
+    public int getPieceFromBitboard(Bitboard bitboard) {
+        if (pawns[0] == bitboard) return PAWN;
+        if (pawns[1] == bitboard) return -PAWN;
+        if (rooks[0] == bitboard) return ROOK;
+        if (rooks[1] == bitboard) return -ROOK;
+        if (knights[0] == bitboard) return KNIGHT;
+        if (knights[1] == bitboard) return -KNIGHT;
+        if (bishops[0] == bitboard) return BISHOP;
+        if (bishops[1] == bitboard) return -BISHOP;
+        if (queens[0] == bitboard) return QUEEN;
+        if (queens[1] == bitboard) return -QUEEN;
+        if (kings[0] == bitboard) return KING;
+        if (kings[1] == bitboard) return -KING;
+        return 0;
+    }
+
+    /**
      * Returns the Bitboard associated with the current piece.
      *
      * @param piece the piece whose Bitboard to get.
@@ -260,7 +280,7 @@ public class Board {
 
         // Handle disabling castling.
         if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = false;
-        else if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
+        if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = false;
 
         // Handle pawn promotion.
         if (move.getPromotionPiece() != 0) {
@@ -477,11 +497,5 @@ public class Board {
         output.append("\n").append("            [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
 
         return output.toString();
-    }
-
-    @Override
-    public int hashCode() {
-        // Calculate the Zobrist key of the board.
-        return super.hashCode();
     }
 }

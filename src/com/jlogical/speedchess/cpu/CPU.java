@@ -13,7 +13,7 @@ public class CPU {
 
     private static final boolean DEBUG = true; // Whether to output debug information as the CPU is thinking.
 
-    private static final int COMPLEXITY = 5; // The number of turns to look ahead to decide its next move.
+    private static final int COMPLEXITY = 2; // The number of turns to look ahead to decide its next move.
 
     private static int count = 0;
 
@@ -70,7 +70,7 @@ public class CPU {
             for (Move move : moveset.getMoves()) {
                 board.makeMove(move, player);
 
-                double depth = board.inCheck(!player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
+                double depth = board.inCheck(!player) || move.getCapturedPiece() != 0 ? layersLeft - 0.2 : layersLeft - 1;
 
                 Pair<Move, Integer> result = calculate(board, player, false, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, !player), alpha, beta);
                 bestMove = bestMove.getSecond() >= result.getSecond() ? bestMove : result;
@@ -95,7 +95,7 @@ public class CPU {
             for (Move move : moveset.getMoves()) {
                 board.makeMove(move, !player);
 
-                double depth = board.inCheck(player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
+                double depth = board.inCheck(player) || move.getCapturedPiece() != 0 ? layersLeft - 0.2 : layersLeft - 1;
 
                 Pair<Move, Integer> result = calculate(board, player, true, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, player), alpha, beta);
                 worstMove = worstMove.getSecond() <= result.getSecond() ? worstMove : result;

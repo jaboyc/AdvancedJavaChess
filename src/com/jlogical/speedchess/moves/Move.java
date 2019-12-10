@@ -14,7 +14,7 @@ public class Move {
     private Bitboard pieceBoard; // The Bitboard that the piece that moved belongs to.
     private int from; // The position the move originated from.
     private int to; // The position the move went to.
-    private int capturedPiece; // The piece this move captured. 0 if none.
+    private int capturedPiece; // The piece this move captured. 0 if none. If [defending], then the piece that this is defending.
 
     /**
      * These are special circumstances.
@@ -24,6 +24,7 @@ public class Move {
     private boolean disableRightCastle; // Whether this move disabled castling right.
     private boolean disableLeftCastle; // Whether this move disabled castling left.
     private int promotionPiece; // The piece the pawn was promoted to. 0 if none.
+    private boolean defending; // Whether the move is simply one that defends another piece.
 
     private Moveset[] nextMoves; // List of moves that are possible after this move. Essentially, a cache.
     private Moveset[] nextLegalMoves; // List of legal moves that are posssible after this move. Essentially, a cache.
@@ -47,6 +48,7 @@ public class Move {
         disableRightCastle = false;
         disableLeftCastle = false;
         promotionPiece = 0;
+        defending = false;
     }
 
     /**
@@ -178,6 +180,16 @@ public class Move {
         this.promotionPiece = promotionPiece;
         return this;
     }
+
+    public boolean isDefending() {
+        return defending;
+    }
+
+    public Move setDefending(boolean defending) {
+        this.defending = defending;
+        return this;
+    }
+
 
     public String toString() {
         return posName(from) + " -> " + posName(to);

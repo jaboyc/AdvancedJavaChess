@@ -52,4 +52,28 @@ public class Piece {
         }
         return "???";
     }
+
+    /**
+     * @param piece the piece whose value to evaluate.
+     * @return the value of the piece.
+     */
+    public static int getValue(int piece) {
+        piece = Math.abs(piece);
+
+        switch (piece) {
+            case PAWN:
+                return 100;
+            case ROOK:
+                return 500;
+            case BISHOP:
+                return 330;
+            case KNIGHT:
+                return 320;
+            case QUEEN:
+                return 900;
+            case KING:
+                return 25000;
+        }
+        return -1;
+    }
 }

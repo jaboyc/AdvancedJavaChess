@@ -65,11 +65,11 @@ public class MoveGenerator {
                         if (i >= 8 && i < 16 && empty.get(i + NORTH + NORTH))
                             addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH + NORTH)); // Move forward two spots if on second row and empty
                     }
-                    if ((i + NORTH_WEST) % 8 != 7 && enemyPieces.get(i + NORTH_WEST)) // Attack to the left if an enemy exists there.
-                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_WEST, board.getPiece(i + NORTH_WEST)).setPromotionPiece(promotionPiece));
+                    if ((i + NORTH_WEST) % 8 != 7 && (enemyPieces.get(i + NORTH_WEST) || pieces.get(i + NORTH_WEST))) // Attack/Defend to the left if an enemy exists there.
+                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_WEST, board.getPiece(i + NORTH_WEST)).setPromotionPiece(promotionPiece).setDefending(pieces.get(i + NORTH_WEST)));
 
-                    if ((i + NORTH_EAST) % 8 != 0 && enemyPieces.get(i + NORTH_EAST)) // Attack to the right if an enemy exists there.
-                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_EAST, board.getPiece(i + NORTH_EAST)).setPromotionPiece(promotionPiece));
+                    if ((i + NORTH_EAST) % 8 != 0 && (enemyPieces.get(i + NORTH_EAST) || pieces.get(i + NORTH_EAST))) // Attack/Defend to the right if an enemy exists there.
+                        addMove(board, true, moves, legalOnly, new Move(pawns, i, i + NORTH_EAST, board.getPiece(i + NORTH_EAST)).setPromotionPiece(promotionPiece).setDefending(pieces.get(i + NORTH_EAST)));
                 } else {
                     int promotionPiece = i < 16 ? -QUEEN : 0; // Promote to queen if possible.
                     if (empty.get(i + SOUTH)) {
@@ -77,11 +77,11 @@ public class MoveGenerator {
                         if (i >= 48 && i < 56 && empty.get(i + SOUTH + SOUTH))
                             addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH + SOUTH)); // Move forward two spots if on second row and empty
                     }
-                    if ((i + SOUTH_EAST) % 8 != 0 && enemyPieces.get(i + SOUTH_EAST)) // Attack to the left if an enemy exists there.
-                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_EAST, board.getPiece(i + SOUTH_EAST)).setPromotionPiece(promotionPiece));
+                    if ((i + SOUTH_EAST + 8) % 8 != 0 && (enemyPieces.get(i + SOUTH_EAST) || pieces.get(i + SOUTH_EAST))) // Attack/Defend to the left if an enemy exists there.
+                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_EAST, board.getPiece(i + SOUTH_EAST)).setPromotionPiece(promotionPiece).setDefending(pieces.get(i + SOUTH_EAST)));
 
-                    if ((i + SOUTH_WEST) % 8 != 7 && enemyPieces.get(i + SOUTH_WEST)) // Attack to the right if an enemy exists there.
-                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_WEST, board.getPiece(i + SOUTH_WEST)).setPromotionPiece(promotionPiece));
+                    if ((i + SOUTH_WEST + 8) % 8 != 7 && (enemyPieces.get(i + SOUTH_WEST) || pieces.get(i + SOUTH_WEST))) // Attack/Defend to the right if an enemy exists there.
+                        addMove(board, false, moves, legalOnly, new Move(pawns, i, i + SOUTH_WEST, board.getPiece(i + SOUTH_WEST)).setPromotionPiece(promotionPiece).setDefending(pieces.get(i + SOUTH_WEST)));
                 }
             }
         }
@@ -99,6 +99,7 @@ public class MoveGenerator {
                 boolean willDisableCastleRight;
                 boolean willDisableCastleLeft;
 
+                // Moving the rook will disable castling.
                 if (player) {
                     willDisableCastleRight = board.canCastleRight(true) && i == 7;
                     willDisableCastleLeft = board.canCastleLeft(true) && i == 0;
@@ -108,39 +109,44 @@ public class MoveGenerator {
                 }
 
                 // NORTH
-                for (int j = i + NORTH; j < 63; j += NORTH) {
-                    if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(rooks, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                for (int j = i + NORTH; j < 64; j += NORTH) {
+                    if (empty.get(j))
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
                         break;
-                    } else break;
+                    }
+
                 }
 
                 // SOUTH
                 for (int j = i + SOUTH; j >= 0; j += SOUTH) {
-                    if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(rooks, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    if (empty.get(j))
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
                         break;
-                    } else break;
+                    }
                 }
 
                 // EAST
                 for (int j = i + EAST; j % 8 != 0; j += EAST) {
-                    if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(rooks, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    if (empty.get(j))
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
                         break;
-                    } else break;
+                    }
                 }
 
                 // WEST
                 for (int j = i + WEST; (j + 8) % 8 != 7; j += WEST) {
-                    if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(rooks, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    if (empty.get(j))
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(rooks, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableRightCastle(willDisableCastleRight).setDisableLeftCastle(willDisableCastleLeft));
                         break;
-                    } else break;
+                    }
                 }
             }
         }
@@ -151,7 +157,6 @@ public class MoveGenerator {
      */
     private static void addKnightMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard knights = board.getKnights(player); // Get the bitboard of all the knights.
-        Bitboard notMine = pieces.not(); // Stores all valid locations for the knight to go.
         for (int i = 0; i < 64; i++) {
             if (knights.get(i)) {
                 int j; // Stores the destination pos.
@@ -160,36 +165,36 @@ public class MoveGenerator {
                  * Check all knight possible moves.
                  */
                 j = i + NORTH + NORTH + EAST;
-                if (i < 48 && i % 8 < 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i < 48 && i % 8 < 7)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + NORTH + EAST + EAST;
-                if (i < 56 && i % 8 < 6 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i < 56 && i % 8 < 6)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + SOUTH + EAST + EAST;
-                if (i > 7 && i % 8 < 6 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i > 7 && i % 8 < 6)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + SOUTH + SOUTH + EAST;
-                if (i > 15 && i % 8 < 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i > 15 && i % 8 < 7)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + SOUTH + SOUTH + WEST;
-                if (i > 15 && i % 8 > 0 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i > 15 && i % 8 > 0)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + SOUTH + WEST + WEST;
-                if (i > 7 && i % 8 > 1 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i > 7 && i % 8 > 1)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + NORTH + WEST + WEST;
-                if (i < 56 && i % 8 > 1 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i < 56 && i % 8 > 1)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
 
                 j = i + NORTH + NORTH + WEST;
-                if (i < 48 && i % 8 > 0 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)));
+                if (i < 48 && i % 8 > 0)
+                    addMove(board, player, moves, legalOnly, new Move(knights, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
             }
         }
     }
@@ -205,37 +210,37 @@ public class MoveGenerator {
                 // NORTH EAST
                 for (int j = i + NORTH_EAST; j < 64 && j % 8 != 0; j += NORTH_EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(bishops, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // SOUTH EAST
                 for (int j = i + SOUTH_EAST; j >= 0 && (j + 8) % 8 != 0; j += SOUTH_EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(bishops, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // SOUTH WEST
                 for (int j = i + SOUTH_WEST; j >= 0 && (j + 8) % 8 != 7; j += SOUTH_WEST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(bishops, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // NORTH WEST
                 for (int j = i + NORTH_WEST; j < 64 && j % 8 != 7; j += NORTH_WEST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(bishops, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(bishops, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
             }
         }
@@ -250,75 +255,75 @@ public class MoveGenerator {
             if (queens.get(i)) {
 
                 // NORTH
-                for (int j = i + NORTH; j < 63; j += NORTH) {
+                for (int j = i + NORTH; j < 64; j += NORTH) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // SOUTH
                 for (int j = i + SOUTH; j >= 0; j += SOUTH) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // EAST
                 for (int j = i + EAST; j % 8 != 0; j += EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // WEST
                 for (int j = i + WEST; (j + 8) % 8 != 7; j += WEST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // NORTH EAST
                 for (int j = i + NORTH_EAST; j < 64 && j % 8 != 0; j += NORTH_EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // SOUTH EAST
-                for (int j = i + SOUTH_EAST; j >= 0 && j % 8 != 0; j += SOUTH_EAST) {
+                for (int j = i + SOUTH_EAST; j >= 0 && (j + 8) % 8 != 0; j += SOUTH_EAST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // SOUTH WEST
                 for (int j = i + SOUTH_WEST; j >= 0 && (j + 8) % 8 != 7; j += SOUTH_WEST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
 
                 // NORTH WEST
                 for (int j = i + NORTH_WEST; j < 64 && j % 8 != 7; j += NORTH_WEST) {
                     if (empty.get(j)) addMove(board, player, moves, legalOnly, new Move(queens, i, j));
-                    else if (enemyPieces.get(j)) {
-                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)));
+                    else {
+                        addMove(board, player, moves, legalOnly, new Move(queens, i, j, board.getPiece(j)).setDefending(pieces.get(j)));
                         break;
-                    } else break;
+                    }
                 }
             }
         }
@@ -329,7 +334,6 @@ public class MoveGenerator {
      */
     private static void addKingMoves(Moveset moves, Board board, Bitboard pieces, Bitboard enemyPieces, Bitboard empty, boolean player, boolean legalOnly) {
         Bitboard king = board.getKing(player); // Get the bitboard of the king.
-        Bitboard notMine = pieces.not(); // Stores all valid locations for the king to go.
         for (int i = 0; i < 64; i++) {
             if (king.get(i)) {
 
@@ -343,52 +347,52 @@ public class MoveGenerator {
                  * Check all the king's possible moves.
                  */
                 j = i + NORTH;
-                if (i < 56 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i < 56)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + NORTH_EAST;
-                if (i < 56 && i % 8 != 0 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i < 56 && i % 8 < 7)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + EAST;
-                if (i % 8 < 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i % 8 < 7)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + SOUTH_EAST;
-                if (i > 7 && i % 8 != 0 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i > 7 && i % 8 < 7)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + SOUTH;
-                if (i > 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i > 7)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + SOUTH_WEST;
-                if (i > 7 && i % 8 != 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i > 7 && i % 8 != 0)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + WEST;
-                if (i % 8 != 0 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i % 8 != 0)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 j = i + NORTH_WEST;
-                if (i < 56 && i % 8 != 7 && notMine.get(j))
-                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
+                if (i < 56 && i % 8 !=  0)
+                    addMove(board, player, moves, legalOnly, new Move(king, i, j, board.getPiece(j)).setDefending(pieces.get(j)).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
 
                 /*
                  * Castling.
                  */
                 if (board.canCastleRight(player) && (!legalOnly || !board.inCheck(player))) {
                     if (player && empty.get(5) && empty.get(6)) {
-                        addMove(board, true, moves, legalOnly, new Move(king, i, 6).setRightCastle(true).setDisableLeftCastle(true).setDisableRightCastle(true));
+                        addMove(board, true, moves, legalOnly, new Move(king, i, 6).setRightCastle(true).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
                     } else if (!player && empty.get(61) && empty.get(62)) {
-                        addMove(board, false, moves, legalOnly, new Move(king, i, 62).setRightCastle(true).setDisableLeftCastle(true).setDisableRightCastle(true));
+                        addMove(board, false, moves, legalOnly, new Move(king, i, 62).setRightCastle(true).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
                     }
                 }
                 if (board.canCastleLeft(player) && (!legalOnly || !board.inCheck(player))) {
                     if (player && empty.get(3) && empty.get(2) && empty.get(1)) {
-                        addMove(board, true, moves, legalOnly, new Move(king, i, 2).setLeftCastle(true).setDisableLeftCastle(true).setDisableRightCastle(true));
+                        addMove(board, true, moves, legalOnly, new Move(king, i, 2).setLeftCastle(true).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
                     } else if (!player && empty.get(59) && empty.get(58) && empty.get(57)) {
-                        addMove(board, false, moves, legalOnly, new Move(king, i, 58).setLeftCastle(true).setDisableLeftCastle(true).setDisableRightCastle(true));
+                        addMove(board, false, moves, legalOnly, new Move(king, i, 58).setLeftCastle(true).setDisableLeftCastle(willDisableCastlingLeft).setDisableRightCastle(willDisableCastlingRight));
                     }
                 }
 

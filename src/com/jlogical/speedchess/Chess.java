@@ -174,7 +174,7 @@ public class Chess {
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(false, false);
+        Chess chess = new Chess(false, true);
         chess.play();
     }
 }

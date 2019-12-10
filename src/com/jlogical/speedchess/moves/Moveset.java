@@ -20,15 +20,19 @@ public class Moveset {
     }
 
     /**
-     * Adds a move to the moveset.
+     * Adds a move to the moveset. If the move is defending, add it to the defences instead.
      *
      * @param move the move to add.
      */
     public void addMove(Move move) {
-        if (move.getCapturedPiece() != 0)
-            moves.add(0, move);
-        else
-            moves.add(move);
+        if (move.isDefending()) {
+            addDefence(move);
+        } else {
+            if (move.getCapturedPiece() != 0)
+                moves.add(0, move);
+            else
+                moves.add(move);
+        }
     }
 
     /**
