@@ -14,7 +14,6 @@ import static com.jlogical.speedchess.board.Piece.QUEEN;
  */
 public class MoveGenerator {
 
-    private static HashMap<Long, Moveset> moveHash = new HashMap<>(1000); // Hash map of all the moves that have already been calculated for every Zobrist Key.
 
     /**
      * @param board     the board to generate moves from.
@@ -23,10 +22,6 @@ public class MoveGenerator {
      * @return the list of all possible moves from the given board state.
      */
     public static Moveset generateMoves(Board board, boolean player, boolean legalOnly) {
-        long key = ZobristKey.getKeyForBoard(board, player);
-        if(moveHash.containsKey(key)){
-            return moveHash.get(key);
-        }
 
         Moveset moves = new Moveset();
 
@@ -41,11 +36,6 @@ public class MoveGenerator {
         addBishopMoves(moves, board, pieces, enemyPieces, empty, player, legalOnly);
         addQueenMoves(moves, board, pieces, enemyPieces, empty, player, legalOnly);
         addKingMoves(moves, board, pieces, enemyPieces, empty, player, legalOnly);
-
-        if(moveHash.size() >= 1000){
-            moveHash.remove(moveHash.keySet().iterator().next());
-        }
-        moveHash.put(key, moves);
 
         return moves;
     }
