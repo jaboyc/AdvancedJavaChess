@@ -70,7 +70,7 @@ public class CPU {
             for (Move move : moveset.getMoves()) {
                 board.makeMove(move, player);
 
-                double depth = board.inCheck(!player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
+                double depth = layersLeft <= 1 && (board.inCheck(!player) || move.getCapturedPiece() != 0) ? layersLeft - 0.75 : layersLeft - 1;
 
                 Pair<Move, Integer> result = calculate(board, player, false, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, !player), alpha, beta);
                 bestMove = bestMove.getSecond() >= result.getSecond() ? bestMove : result;
@@ -95,7 +95,7 @@ public class CPU {
             for (Move move : moveset.getMoves()) {
                 board.makeMove(move, !player);
 
-                double depth = board.inCheck(player) || move.getCapturedPiece() != 0 ? layersLeft - 0.75 : layersLeft - 1;
+                double depth = layersLeft <= 1 && (board.inCheck(player) || move.getCapturedPiece() != 0) ? layersLeft - 0.75 : layersLeft - 1;
 
                 Pair<Move, Integer> result = calculate(board, player, true, depth, rootMove == null ? move : rootMove, move.getNextLegalMoves(board, player), alpha, beta);
                 worstMove = worstMove.getSecond() <= result.getSecond() ? worstMove : result;
