@@ -182,7 +182,14 @@ public class Chess {
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(true, false, "r1b1kbr1/ppp2qpp/2P2n2/4p3/2B5/1QP5/PP1N1PPP/R1B1K2R b KQq - 0 12");
+        Chess chess = new Chess(false, true);
         chess.play();
     }
 }
+
+/*
+Current Limitations
+1. En Passant does not work yet.
+2. Promotion is only queens for now.
+3. FEN code does not transfer castling, en passant.
+ */

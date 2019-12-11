@@ -504,8 +504,8 @@ public class Board {
         output.append("     A   B   C   D   E   F   G   H\n");
 
         // Add scores
-        output.append("\n").append("            [").append(Evaluator.evaluate(this, true)).append(" <> ").append(Evaluator.evaluate(this, false)).append("]\n");
-        output.append("\n").append(MoveGenerator.generateMoves(this, true, true).getMoves());
+        output.append("\n").append("       Score: [").append(Evaluator.evaluate(this, true)).append("]\n");
+//        output.append("\n").append(MoveGenerator.generateMoves(this, true, true).getMoves());
         return output.toString();
     }
 }
