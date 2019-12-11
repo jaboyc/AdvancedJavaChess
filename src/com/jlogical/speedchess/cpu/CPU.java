@@ -28,7 +28,7 @@ public class CPU {
 
         count = 0;
 
-        Pair<Move, Integer> highestMove = calculate(board, player, true, COMPLEXITY, null, board.getHistory().peek().getNextLegalMoves(board, player), Integer.MIN_VALUE, Integer.MAX_VALUE);
+        Pair<Move, Integer> highestMove = calculate(board, player, true, COMPLEXITY, null, board.getMoveHistory().peek().getNextLegalMoves(board, player), Integer.MIN_VALUE, Integer.MAX_VALUE);
 
         // Check for null.
         if (highestMove == null || highestMove.getFirst() == null) {

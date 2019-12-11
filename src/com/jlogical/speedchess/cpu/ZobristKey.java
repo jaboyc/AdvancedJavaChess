@@ -78,7 +78,7 @@ public class ZobristKey {
      * @return the key for the move.
      */
     public static long getKeyForMove(Move move, Board board) {
-        return getKeyForSquare(move.getFrom(), board.getPieceFromBitboard(move.getPieceBoard())) ^ getKeyForSquare(move.getTo(), board.getPieceFromBitboard(move.getPieceBoard()));
+        return getKeyForSquare(move.getFrom(), board.getPiece(move.getFrom())) ^ getKeyForSquare(move.getTo(), board.getPiece(move.getFrom()));
     }
 
     /**

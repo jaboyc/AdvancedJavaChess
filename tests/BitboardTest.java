@@ -7,53 +7,53 @@ public class BitboardTest {
 
     @Test
     public void testSet() {
-        Bitboard board = new Bitboard();
-        assertFalse(board.get(0));
-        assertFalse(board.get(0, 0));
+        long board = 0L;
+        assertFalse(Bitboard.get(board,0));
+        assertFalse(Bitboard.get(board,0, 0));
 
-        board.set(0, 0);
+        board = Bitboard.set(board,0, 0);
 
-        assertTrue(board.get(0));
-        assertTrue(board.get(0, 0));
+        assertTrue(Bitboard.get(board,0));
+        assertTrue(Bitboard.get(board,0, 0));
     }
 
     @Test
     public void testClear() {
-        Bitboard board = new Bitboard();
+        long board = 0L;
 
-        board.set(1, 1);
-        board.set(5, 2);
+        board = Bitboard.set(board,1, 1);
+        board = Bitboard.set(board,5, 2);
 
-        board.clear(1, 1);
-        board.clear(5, 2);
+        board = Bitboard.clear(board,1, 1);
+        board = Bitboard.clear(board,5, 2);
 
-        assertFalse(board.get(1, 1));
-        assertFalse(board.get(5, 2));
+        assertFalse(Bitboard.get(board,1, 1));
+        assertFalse(Bitboard.get(board,5, 2));
     }
 
     @Test
     public void testIntersection() {
-        Bitboard b1 = new Bitboard();
-        Bitboard b2 = new Bitboard();
+        long b1 = 0L;
+        long b2 = 0L;
 
         for (int i = 0; i < 64; i += 4) {
-            b1.set(i);
+            b1 = Bitboard.set(b1,i);
         }
 
-        assertEquals(b1.count(), 16);
+        assertEquals(Bitboard.count(b1), 16);
 
         for (int i = 0; i < 64; i += 7) {
-            b2.set(i);
+            b2 = Bitboard.set(b2,i);
         }
 
-        assertEquals(b2.count(), 10);
+        assertEquals(Bitboard.count(b2), 10);
 
-        Bitboard intersect = Bitboard.and(b1, b2);
-        assertTrue(intersect.get(0));
-        assertFalse(intersect.get(4));
-        assertEquals(intersect.count(), 3);
+        long intersect = b1 & b2;
+        assertTrue(Bitboard.get(intersect,0));
+        assertFalse(Bitboard.get(intersect,4));
+        assertEquals(Bitboard.count(intersect), 3);
 
-        assertEquals(intersect.toString(),
+        assertEquals(Bitboard.format(intersect),
                 "*X* * * * * * * *\n" +
                         "* * * * * * * * *\n" +
                         "* * * * * * * * *\n" +
@@ -63,32 +63,32 @@ public class BitboardTest {
                         "* * * * * * * * *\n" +
                         "*X* * * * * * * *\n");
 
-        assertEquals(intersect, Bitboard.and(b1, b2, b1));
+        assertEquals(intersect, b1 & b2);
     }
 
     @Test
     public void testUnion() {
-        Bitboard b1 = new Bitboard();
-        Bitboard b2 = new Bitboard();
+        long b1 = 0L;
+        long b2 = 0L;
 
         for (int i = 0; i < 64; i += 4) {
-            b1.set(i);
+            b1 = Bitboard.set(b1,i);
         }
 
-        assertEquals(b1.count(), 16);
+        assertEquals(Bitboard.count(b1), 16);
 
         for (int i = 0; i < 64; i += 7) {
-            b2.set(i);
+            b2 = Bitboard.set(b2,i);
         }
 
-        assertEquals(b2.count(), 10);
+        assertEquals(Bitboard.count(b2), 10);
 
-        Bitboard union = Bitboard.or(b1, b2);
-        assertTrue(union.get(0));
-        assertTrue(union.get(4));
-        assertEquals(union.count(), 23);
+        long union = b1 | b2;
+        assertTrue(Bitboard.get(union,0));
+        assertTrue(Bitboard.get(union,4));
+        assertEquals(Bitboard.count(union), 23);
 
-        assertEquals(union.toString(),
+        assertEquals(Bitboard.format(union),
                 "*X* * * *X* * *X*\n" +
                         "*X*X* * *X* * * *\n" +
                         "*X* *X* *X* * * *\n" +
@@ -98,19 +98,19 @@ public class BitboardTest {
                         "*X* * * *X* *X* *\n" +
                         "*X* * * *X* * *X*\n");
 
-        assertEquals(union, Bitboard.or(b1, b2, b1));
+        assertEquals(union, b1 | b2);
     }
 
     @Test
     public void testString() {
-        Bitboard board = new Bitboard();
-        board.set(0, 0);
-        board.set(1, 2);
-        board.set(6, 6);
-        board.set(7, 2);
-        board.set(4, 7);
+        long board = 0L;
+        board = Bitboard.set(board,0, 0);
+        board = Bitboard.set(board,1, 2);
+        board = Bitboard.set(board,6, 6);
+        board = Bitboard.set(board,7, 2);
+        board = Bitboard.set(board,4, 7);
 
-        assertEquals(board.toString(),
+        assertEquals(Bitboard.format(board),
                 "* * * * *X* * * *\n" +
                         "* * * * * * *X* *\n" +
                         "* * * * * * * * *\n" +

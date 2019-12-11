@@ -2,7 +2,6 @@ package com.jlogical.speedchess.board;
 
 import com.jlogical.speedchess.bitboard.Bitboard;
 import com.jlogical.speedchess.cpu.Evaluator;
-import com.jlogical.speedchess.cpu.ZobristKey;
 import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.MoveGenerator;
 
@@ -20,21 +19,21 @@ public class Board {
      * The following Bitboards arrays have 2 elements. board[0] is white, board[1] is black.
      * These bitboards contain the positions of all the types of pieces for each player.
      */
-    private long[] pawns;
-    private long[] rooks;
-    private long[] knights;
-    private long[] bishops;
-    private long[] queens;
-    private long[] kings;
+    public long[] pawns;
+    public long[] rooks;
+    public long[] knights;
+    public long[] bishops;
+    public long[] queens;
+    public long[] kings;
 
     /**
      * The following boolean arrays have 2 elements. [0] is white, [1] is black.
      * These contain whether each player can castle right or left.
      */
-    private boolean[] canCastleRight;
-    private boolean[] canCastleLeft;
+    public boolean[] canCastleRight;
+    public boolean[] canCastleLeft;
 
-    private Stack<Move> history; // History of previous moves.
+    private Stack<Move> moveHistory; // History of previous moves.
 
     /**
      * Creates a new board. Generates all bitboards as well.
@@ -50,69 +49,17 @@ public class Board {
         canCastleRight = new boolean[]{true, true};
         canCastleLeft = new boolean[]{true, true};
 
-        history = new Stack<>();
+        moveHistory = new Stack<>();
 
         initPieceBitboards();
     }
 
     /**
-     * Returns the pawn bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the pawn bitboard that belongs to the player.
+     * @param player the player whose number to get.
+     * @return the index the player is in each bitboard.
      */
-    public long getPawns(boolean player) {
-        return getPlayerBitboard(pawns, player);
-    }
-
-    /**
-     * Returns the rook bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the rook bitboard that belongs to the player.
-     */
-    public long getRooks(boolean player) {
-        return getPlayerBitboard(rooks, player);
-    }
-
-    /**
-     * Returns the knight bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the knight bitboard that belongs to the player.
-     */
-    public long getKnights(boolean player) {
-        return getPlayerBitboard(knights, player);
-    }
-
-    /**
-     * Returns the bishop bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the bishop bitboard that belongs to the player.
-     */
-    public long getBishops(boolean player) {
-        return getPlayerBitboard(bishops, player);
-    }
-
-    /**
-     * Returns the queen bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the queen bitboard that belongs to the player.
-     */
-    public long getQueen(boolean player) {
-        return getPlayerBitboard(queens, player);
-    }
-
-    /**
-     * Returns the king bitboard of the player.
-     *
-     * @param player whether the player is white.
-     * @return the king bitboard that belongs to the player.
-     */
-    public long getKing(boolean player) {
-        return getPlayerBitboard(kings, player);
+    public static int playerBitboardNum(boolean player) {
+        return player ? 0 : 1;
     }
 
     /**
@@ -120,83 +67,8 @@ public class Board {
      * @return the intersection of all the pieces of the given player.
      */
     public long getPieces(boolean player) {
-        return getPawns(player) | getRooks(player) | getKnights(player) | getBishops(player) | getQueen(player) | getKing(player);
-    }
-
-    /**
-     * @param player the player to look at.
-     * @return whether the given player can castle right.
-     */
-    public boolean canCastleRight(boolean player) {
-        return canCastleRight[player ? 0 : 1];
-    }
-
-    /**
-     * @param player the player to look at.
-     * @return whether the given player can castle left.
-     */
-    public boolean canCastleLeft(boolean player) {
-        return canCastleLeft[player ? 0 : 1];
-    }
-
-    /**
-     * @return a bitboard of all the empty tiles.
-     */
-    public long getEmptyTiles() {
-        return ~(getPieces(true) | getPieces(false));
-    }
-
-    /**
-     * Returns the piece at the given position.
-     *
-     * @param pos the position to look at (0-63).
-     * @return the piece. 0 if none present.
-     */
-    public int getPiece(int pos) {
-        if (Bitboard.get(pawns[0],pos)) return PAWN;
-        if (Bitboard.get(pawns[1],pos)) return -PAWN;
-        if (Bitboard.get(rooks[0],pos)) return ROOK;
-        if (Bitboard.get(rooks[1],pos)) return -ROOK;
-        if (Bitboard.get(knights[0],pos)) return KNIGHT;
-        if (Bitboard.get(knights[1],pos)) return -KNIGHT;
-        if (Bitboard.get(bishops[0],pos)) return BISHOP;
-        if (Bitboard.get(bishops[1],pos)) return -BISHOP;
-        if (Bitboard.get(queens[0],pos)) return QUEEN;
-        if (Bitboard.get(queens[1],pos)) return -QUEEN;
-        if (Bitboard.get(kings[0],pos)) return KING;
-        if (Bitboard.get(kings[1],pos)) return -KING;
-        return 0;
-    }
-
-    /**
-     * Returns the piece at the given x & y location.
-     *
-     * @param x the x position. (0-7)
-     * @param y the y position. (0-7)
-     * @return
-     */
-    public int getPiece(int x, int y) {
-        return getPiece(y * 8 + x);
-    }
-
-    /**
-     * @param bitboard the bitboard to evaluate.
-     * @return the piece type that is in the bitboard.
-     */
-    public int getPieceFromBitboard(long bitboard) {
-        if (pawns[0] == bitboard) return PAWN;
-        if (pawns[1] == bitboard) return -PAWN;
-        if (rooks[0] == bitboard) return ROOK;
-        if (rooks[1] == bitboard) return -ROOK;
-        if (knights[0] == bitboard) return KNIGHT;
-        if (knights[1] == bitboard) return -KNIGHT;
-        if (bishops[0] == bitboard) return BISHOP;
-        if (bishops[1] == bitboard) return -BISHOP;
-        if (queens[0] == bitboard) return QUEEN;
-        if (queens[1] == bitboard) return -QUEEN;
-        if (kings[0] == bitboard) return KING;
-        if (kings[1] == bitboard) return -KING;
-        return 0;
+        int playerNum = playerBitboardNum(player);
+        return pawns[playerNum] | rooks[playerNum] | knights[playerNum] | bishops[playerNum] | queens[playerNum] | kings[playerNum];
     }
 
     /**
@@ -236,6 +108,110 @@ public class Board {
     }
 
     /**
+     * Sets the bitboard of the given pieceType to the given value.
+     *
+     * @param pieceType the pieceType whose bitboard to get.
+     * @param value     the value to set it to.
+     */
+    public void setBitboard(int pieceType, long value) {
+        switch (pieceType) {
+            case PAWN:
+                pawns[0] = value;
+                break;
+            case -PAWN:
+                pawns[1] = value;
+                break;
+            case ROOK:
+                rooks[0] = value;
+                break;
+            case -ROOK:
+                rooks[1] = value;
+                break;
+            case KNIGHT:
+                knights[0] = value;
+                break;
+            case -KNIGHT:
+                knights[1] = value;
+                break;
+            case BISHOP:
+                bishops[0] = value;
+                break;
+            case -BISHOP:
+                bishops[1] = value;
+                break;
+            case QUEEN:
+                queens[0] = value;
+                break;
+            case -QUEEN:
+                queens[1] = value;
+                break;
+            case KING:
+                kings[0] = value;
+                break;
+            case -KING:
+                kings[1] = value;
+                break;
+        }
+    }
+
+    /**
+     * @param player the player to look at.
+     * @return whether the given player can castle right.
+     */
+    public boolean canCastleRight(boolean player) {
+        return canCastleRight[player ? 0 : 1];
+    }
+
+    /**
+     * @param player the player to look at.
+     * @return whether the given player can castle left.
+     */
+    public boolean canCastleLeft(boolean player) {
+        return canCastleLeft[player ? 0 : 1];
+    }
+
+    /**
+     * @return a bitboard of all the empty tiles.
+     */
+    public long getEmptyTiles() {
+        return ~(getPieces(true) | getPieces(false));
+    }
+
+    /**
+     * Returns the piece at the given position.
+     *
+     * @param pos the position to look at (0-63).
+     * @return the piece. 0 if none present.
+     */
+    public int getPiece(int pos) {
+        if (Bitboard.get(pawns[0], pos)) return PAWN;
+        if (Bitboard.get(pawns[1], pos)) return -PAWN;
+        if (Bitboard.get(rooks[0], pos)) return ROOK;
+        if (Bitboard.get(rooks[1], pos)) return -ROOK;
+        if (Bitboard.get(knights[0], pos)) return KNIGHT;
+        if (Bitboard.get(knights[1], pos)) return -KNIGHT;
+        if (Bitboard.get(bishops[0], pos)) return BISHOP;
+        if (Bitboard.get(bishops[1], pos)) return -BISHOP;
+        if (Bitboard.get(queens[0], pos)) return QUEEN;
+        if (Bitboard.get(queens[1], pos)) return -QUEEN;
+        if (Bitboard.get(kings[0], pos)) return KING;
+        if (Bitboard.get(kings[1], pos)) return -KING;
+        return 0;
+    }
+
+    /**
+     * Returns the piece at the given x & y location.
+     *
+     * @param x the x position. (0-7)
+     * @param y the y position. (0-7)
+     * @return
+     */
+    public int getPiece(int x, int y) {
+        return getPiece(y * 8 + x);
+    }
+
+
+    /**
      * Performs the given move.
      *
      * @param move   the move to perform.
@@ -243,41 +219,39 @@ public class Board {
      */
     public void makeMove(Move move, boolean player) {
 
-        history.push(move); // Add the move to the board's history.
+        moveHistory.push(move); // Add the move to the board's moveHistory.
 
         // Move the piece in its piece board.
-        move.getPieceBoard().clear(move.getFrom());
-        move.getPieceBoard().set(move.getTo());
+        int pieceType = getPiece(move.getFrom());
+        setBitboard(pieceType, Bitboard.clear(getPieceBitboard(pieceType), move.getFrom()));
+        setBitboard(pieceType, Bitboard.set(getPieceBitboard(pieceType), move.getTo()));
 
         // Handle piece capturing.
         if (move.getCapturedPiece() != 0) {
-            Bitboard capturedBitboard = getPieceBitboard(move.getCapturedPiece());
-            capturedBitboard.clear(move.getTo());
+            setBitboard(move.getCapturedPiece(), Bitboard.clear(getPieceBitboard(move.getCapturedPiece()), move.getTo()));
         }
 
         // Handle castling.
         if (move.isRightCastle()) {
-            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
 
             // Move the rook to the correct location.
             if (player) {
-                rookBitboard.clear(7);
-                rookBitboard.set(5);
+                rooks[0] = Bitboard.clear(rooks[0], 7);
+                rooks[0] = Bitboard.set(rooks[0], 5);
             } else {
-                rookBitboard.clear(63);
-                rookBitboard.set(61);
+                rooks[1] = Bitboard.clear(rooks[1], 63);
+                rooks[1] = Bitboard.set(rooks[1], 61);
             }
 
         } else if (move.isLeftCastle()) {
-            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
 
             // Move the rook to the correct location.
             if (player) {
-                rookBitboard.clear(0);
-                rookBitboard.set(3);
+                rooks[0] = Bitboard.clear(rooks[0], 0);
+                rooks[0] = Bitboard.set(rooks[0], 3);
             } else {
-                rookBitboard.clear(56);
-                rookBitboard.set(59);
+                rooks[1] = Bitboard.clear(rooks[1], 56);
+                rooks[1] = Bitboard.set(rooks[1], 59);
             }
         }
 
@@ -292,10 +266,11 @@ public class Board {
         // Handle pawn promotion.
         if (move.getPromotionPiece() != 0) {
 
-            // Remove the piece and replace it with the given promoted piece.
-            move.getPieceBoard().clear(move.getTo());
+            int playerNum = playerBitboardNum(player);
 
-            getPieceBitboard(move.getPromotionPiece()).set(move.getTo());
+            // Remove the piece and replace it with the given promoted piece.
+            pawns[playerNum] = Bitboard.clear(pawns[playerNum], move.getTo());
+            setBitboard(move.getPromotionPiece(), Bitboard.set(getPieceBitboard(move.getPromotionPiece()), move.getTo()));
         }
 
     }
@@ -307,55 +282,58 @@ public class Board {
      */
     public void unmakeMove(boolean player) {
 
-        Move lastMove = history.pop(); // Get the most-recently made move.
+        Move move = moveHistory.pop(); // Get the most-recently made move.
+        move.clearCache();
 
-        lastMove.clearCache();
+        // Handle pawn promotion.
+        if (move.getPromotionPiece() != 0) {
+
+            int playerNum = playerBitboardNum(player);
+
+            // Remove the piece and replace it with the given promoted piece.
+            pawns[playerNum] = Bitboard.set(pawns[playerNum], move.getTo());
+
+            // Remove the promoted piece.
+            setBitboard(move.getPromotionPiece(), Bitboard.clear(getPieceBitboard(move.getPromotionPiece()), move.getTo()));
+        }
 
         // Unmove the piece in its piece board.
-        lastMove.getPieceBoard().clear(lastMove.getTo());
-        lastMove.getPieceBoard().set(lastMove.getFrom());
+        int pieceType = getPiece(move.getTo());
+        setBitboard(pieceType, Bitboard.clear(getPieceBitboard(pieceType), move.getTo()));
+        setBitboard(pieceType, Bitboard.set(getPieceBitboard(pieceType), move.getFrom()));
 
         // Replace the captured piece.
-        if (lastMove.getCapturedPiece() != 0) {
-            Bitboard capturedBitboard = getPieceBitboard(lastMove.getCapturedPiece());
-            capturedBitboard.set(lastMove.getTo());
+        if (move.getCapturedPiece() != 0) {
+            setBitboard(move.getCapturedPiece(), Bitboard.set(getPieceBitboard(move.getCapturedPiece()), move.getTo()));
         }
 
         // Handle castling.
-        if (lastMove.isRightCastle()) {
-            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
+        if (move.isRightCastle()) {
 
-            // Move the rook back to its starting location.
+            // Move the rook to the correct location.
             if (player) {
-                rookBitboard.clear(5);
-                rookBitboard.set(7);
+                rooks[0] = Bitboard.set(rooks[0], 7);
+                rooks[0] = Bitboard.clear(rooks[0], 5);
             } else {
-                rookBitboard.clear(61);
-                rookBitboard.set(63);
+                rooks[1] = Bitboard.set(rooks[1], 63);
+                rooks[1] = Bitboard.clear(rooks[1], 61);
             }
-        } else if (lastMove.isLeftCastle()) {
-            Bitboard rookBitboard = getRooks(player); // The bitboard of the rooks.
 
-            // Move the rook back to its starting location.
+        } else if (move.isLeftCastle()) {
+
+            // Move the rook to the correct location.
             if (player) {
-                rookBitboard.clear(3);
-                rookBitboard.set(0);
+                rooks[0] = Bitboard.set(rooks[0], 0);
+                rooks[0] = Bitboard.clear(rooks[0], 3);
             } else {
-                rookBitboard.clear(59);
-                rookBitboard.set(56);
+                rooks[1] = Bitboard.set(rooks[1], 56);
+                rooks[1] = Bitboard.clear(rooks[1], 59);
             }
         }
 
         // Handle disabling castling. Re-enable them.
-        if (lastMove.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = true;
-        if (lastMove.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
-
-        // Handle pawn promotion.
-        if (lastMove.getPromotionPiece() != 0) {
-
-            // Remove the added piece.
-            getPieceBitboard(lastMove.getPromotionPiece()).clear(lastMove.getTo());
-        }
+        if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = true;
+        if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
     }
 
     /**
@@ -363,8 +341,8 @@ public class Board {
      * @return whether the given player is in check.
      */
     public boolean inCheck(boolean player) {
-        if (history.isEmpty()) return false;
-        List<Move> enemyMoves = history.peek().getNextMoves(this, !player).getMoves();
+        if (moveHistory.isEmpty()) return false;
+        List<Move> enemyMoves = moveHistory.peek().getNextMoves(this, !player).getMoves();
 
         // Check if any of the enemy's move hit the king.
         for (Move move : enemyMoves) {
@@ -380,8 +358,8 @@ public class Board {
      * @return whether the given player is in check mate.
      */
     public boolean isCheckMate(boolean player) {
-        if (history.isEmpty()) return false;
-        return inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
+        if (moveHistory.isEmpty()) return false;
+        return inCheck(player) && moveHistory.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
     /**
@@ -389,19 +367,8 @@ public class Board {
      * @return whether the given player is in stale mate.
      */
     public boolean isStaleMate(boolean player) {
-        if (history.isEmpty()) return false;
-        return !inCheck(player) && history.peek().getNextLegalMoves(this, player).isEmpty();
-    }
-
-    /**
-     * Returns the bitboard that belongs to the player.
-     *
-     * @param bitboards the bitboard array. Use any of the pieces bitboard arrays.
-     * @param player    whether the player is white.
-     * @return the bitboard that belongs to the player.
-     */
-    private long getPlayerBitboard(long[] bitboards, boolean player) {
-        return bitboards[player ? 0 : 1];
+        if (moveHistory.isEmpty()) return false;
+        return !inCheck(player) && moveHistory.peek().getNextLegalMoves(this, player).isEmpty();
     }
 
     /**
@@ -411,54 +378,55 @@ public class Board {
         // WHITE
         // Pawns
         for (int i = 0; i < 8; i++) {
-            pawns[0].set(i, 1);
+            pawns[0] = Bitboard.set(pawns[0], i, 1);
         }
 
         // Rooks
-        rooks[0].set(0, 0);
-        rooks[0].set(7, 0);
+        rooks[0] = Bitboard.set(rooks[0], 0, 0);
+        rooks[0] = Bitboard.set(rooks[0], 7, 0);
 
         // Knights
-        knights[0].set(1, 0);
-        knights[0].set(6, 0);
+        knights[0] = Bitboard.set(knights[0], 1, 0);
+        knights[0] = Bitboard.set(knights[0], 6, 0);
 
         // Bishops
-        bishops[0].set(2, 0);
-        bishops[0].set(5, 0);
+        bishops[0] = Bitboard.set(bishops[0], 2, 0);
+        bishops[0] = Bitboard.set(bishops[0], 5, 0);
 
         // Queen
-        queens[0].set(3, 0);
+        queens[0] = Bitboard.set(queens[0], 3, 0);
 
         // King
-        kings[0].set(4, 0);
+        kings[0] = Bitboard.set(kings[0], 4, 0);
 
         // BLACK
         // Pawns
         for (int i = 0; i < 8; i++) {
-            pawns[1].set(i, 6);
+            pawns[1] = Bitboard.set(pawns[1], i, 6);
         }
 
         // Rooks
-        rooks[1].set(0, 7);
-        rooks[1].set(7, 7);
+        rooks[1] = Bitboard.set(rooks[1], 0, 7);
+        rooks[1] = Bitboard.set(rooks[1], 7, 7);
 
         // Knights
-        knights[1].set(1, 7);
-        knights[1].set(6, 7);
+        knights[1] = Bitboard.set(knights[1], 1, 7);
+        knights[1] = Bitboard.set(knights[1], 6, 7);
 
         // Bishops
-        bishops[1].set(2, 7);
-        bishops[1].set(5, 7);
+        bishops[1] = Bitboard.set(bishops[1], 2, 7);
+        bishops[1] = Bitboard.set(bishops[1], 5, 7);
 
         // Queen
-        queens[1].set(3, 7);
+        queens[1] = Bitboard.set(queens[1], 3, 7);
 
         // King
-        kings[1].set(4, 7);
+        kings[1] = Bitboard.set(kings[1], 4, 7);
+
     }
 
-    public Stack<Move> getHistory() {
-        return history;
+    public Stack<Move> getMoveHistory() {
+        return moveHistory;
     }
 
     /**

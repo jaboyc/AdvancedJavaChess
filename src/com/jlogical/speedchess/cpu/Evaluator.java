@@ -49,49 +49,50 @@ public class Evaluator {
         if (board.isStaleMate(false)) return -50000 * scoreMultiplier;
 
         // Material points.
-        score += (board.getPawns(true).count() - board.getPawns(false).count()) * 100;
-        score += (board.getRooks(true).count() - board.getRooks(false).count()) * 500;
-        score += (board.getKnights(true).count() - board.getKnights(false).count()) * 320;
-        score += (board.getBishops(true).count() - board.getBishops(false).count()) * 330;
-        score += (board.getQueen(true).count() - board.getQueen(false).count()) * 900;
-        score += (board.getKing(true).count() - board.getKing(false).count()) * 25000;
+
+        score += (Bitboard.count(board.pawns[0]) - Bitboard.count(board.pawns[1])) * 100;
+        score += (Bitboard.count(board.rooks[0]) - Bitboard.count(board.rooks[1])) * 500;
+        score += (Bitboard.count(board.knights[0]) - Bitboard.count(board.knights[1])) * 320;
+        score += (Bitboard.count(board.bishops[0]) - Bitboard.count(board.bishops[1])) * 330;
+        score += (Bitboard.count(board.queens[0]) - Bitboard.count(board.queens[1])) * 900;
+        score += (Bitboard.count(board.kings[0]) - Bitboard.count(board.kings[1])) * 25000;
 
         // Positional bonus.
-        Bitboard pieces = board.getPieces(true);
+        long pieces = board.getPieces(true);
         for (int i = 0; i < 64; i++) {
-            if (pieces.get(i)) {
+            if (Bitboard.get(pieces,i)) {
 
                 // Pawn position.
-                if (board.getPawns(true).get(i)) {
+                if (Bitboard.get(board.pawns[0],i)) {
                     score += forwardDistance(i, true) * PAWN_FORWARD_BONUS;
                 }
 
                 // Rook/Knight/Bishop/Queen
-                if (board.getRooks(true).get(i) || board.getKnights(true).get(i) || board.getBishops(true).get(i) || board.getQueen(true).get(i)) {
+                if (Bitboard.get(board.rooks[0],i) || Bitboard.get(board.knights[0],i) || Bitboard.get(board.bishops[0],i) || Bitboard.get(board.queens[0],i)) {
                     score += centerDistance(i) * CENTER_POSITION_BONUS;
                 }
             }
         }
-        Bitboard enemyPieces = board.getPieces(false);
+        pieces = board.getPieces(false);
         for (int i = 0; i < 64; i++) {
-            if (enemyPieces.get(i)) {
+            if (Bitboard.get(pieces,i)) {
 
                 // Pawn position.
-                if (board.getPawns(false).get(i)) {
+                if (Bitboard.get(board.pawns[1],i)) {
                     score -= forwardDistance(i, false) * PAWN_FORWARD_BONUS;
                 }
 
                 // Rook/Knight/Bishop/Queen
-                if (board.getRooks(false).get(i) || board.getKnights(false).get(i) || board.getBishops(false).get(i) || board.getQueen(false).get(i)) {
+                if (Bitboard.get(board.rooks[1],i) || Bitboard.get(board.knights[1],i) || Bitboard.get(board.bishops[1],i) || Bitboard.get(board.queens[1],i)) {
                     score -= centerDistance(i) * CENTER_POSITION_BONUS;
                 }
             }
         }
 
         // Move bonuses.
-        if (!board.getHistory().isEmpty()) {
-            Moveset moves = board.getHistory().peek().getNextMoves(board, true);
-            Moveset enemyMoves = board.getHistory().peek().getNextMoves(board, false);
+        if (!board.getMoveHistory().isEmpty()) {
+            Moveset moves = board.getMoveHistory().peek().getNextMoves(board, true);
+            Moveset enemyMoves = board.getMoveHistory().peek().getNextMoves(board, false);
 
             // Bonus points for attacks / mobility.
             for (Move move : moves.getMoves()) {
@@ -99,7 +100,7 @@ public class Evaluator {
                 score += centerDistance(move.getTo()) * CENTER_MOBILITY_BONUS + 5;
 
                 if (move.getCapturedPiece() != 0) {
-                    int origin = Piece.getValue(board.getPieceFromBitboard(move.getPieceBoard()));
+                    int origin = Piece.getValue(board.getPiece(move.getFrom()));
                     int dest = Piece.getValue(move.getCapturedPiece());
 
                     // If this move is checking the king, reduce the bonus points.
@@ -119,7 +120,7 @@ public class Evaluator {
                 score -= centerDistance(move.getTo()) * CENTER_MOBILITY_BONUS + 5;
 
                 if (move.getCapturedPiece() != 0) {
-                    int origin = Piece.getValue(board.getPieceFromBitboard(move.getPieceBoard()));
+                    int origin = Piece.getValue(board.getPiece(move.getFrom()));
                     int dest = Piece.getValue(move.getCapturedPiece());
 
                     // If this move is checking the king, reduce the bonus points.
@@ -136,7 +137,7 @@ public class Evaluator {
 
             // Bonus points for defense.
             for (Move move : moves.getDefences()) {
-                int origin = Piece.getValue(board.getPieceFromBitboard(move.getPieceBoard()));
+                int origin = Piece.getValue(board.getPiece(move.getFrom()));
                 int dest = Piece.getValue(move.getCapturedPiece());
 
                 // Skip defending the king.
@@ -146,7 +147,7 @@ public class Evaluator {
             }
 
             for (Move move : enemyMoves.getDefences()) {
-                int origin = Piece.getValue(board.getPieceFromBitboard(move.getPieceBoard()));
+                int origin = Piece.getValue(board.getPiece(move.getFrom()));
                 int dest = Piece.getValue(move.getCapturedPiece());
 
                 // Skip defending the king.

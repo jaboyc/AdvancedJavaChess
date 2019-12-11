@@ -106,13 +106,13 @@ public class Bitboard {
     /**
      * @return the String representation of the bit board. Used for debugging.
      */
-    public String toString() {
+    public static String format(long board) {
         StringBuilder builder = new StringBuilder();
 
         // Go through each bit and append its value to the board.
         for (int i = 7; i >= 0; i--) {
             for (int j = 0; j < 8; j++) {
-                builder.append(get(j, i) ? "*X" : "* ");
+                builder.append(get(board, j, i) ? "*X" : "* ");
             }
             builder.append("*\n");
         }

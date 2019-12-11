@@ -32,7 +32,7 @@ public class Chess {
         boolean currPlayer = true; // Whether the current player is white.
 
         // Repeatedly switch turns until checkmate or stalemate.
-        while (!board.isCheckMate(currPlayer) && !board.isStaleMate(currPlayer)) {
+        while (/*!board.isCheckMate(currPlayer) && !board.isStaleMate(currPlayer)*/ true) {
 
             // Print board information out.
             System.out.println(board);
@@ -53,14 +53,14 @@ public class Chess {
             currPlayer = !currPlayer;
         }
 
-        System.out.println(board);
-
-        // Print the end condition.
-        if (board.isCheckMate(currPlayer)) {
-            System.out.println("===(CHECK MATE)===");
-        } else {
-            System.out.println("===(STALE MATE)===");
-        }
+//        System.out.println(board);
+//
+//        // Print the end condition.
+//        if (board.isCheckMate(currPlayer)) {
+//            System.out.println("===(CHECK MATE)===");
+//        } else {
+//            System.out.println("===(STALE MATE)===");
+//        }
     }
 
     /**
@@ -71,8 +71,8 @@ public class Chess {
      */
     private Move humanMove(boolean player) {
 
-        if (board.inCheck(player))
-            System.out.println("   [CHECK]");
+       // if (board.inCheck(player))
+        //    System.out.println("   [CHECK]");
 
         // Keep asking for user input until they give a valid move.
         while (true) {
@@ -85,7 +85,7 @@ public class Chess {
             int capturedPiece = board.getPiece(toPos);
 
             // Generate the move from the input.
-            Move move = new Move(board.getPieceBitboard(board.getPiece(fromPos)), fromPos, toPos, capturedPiece);
+            Move move = new Move(fromPos, toPos, capturedPiece);
 
             // If the move is valid, return the move. Otherwise try again.
             List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true).getMoves();

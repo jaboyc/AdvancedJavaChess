@@ -10,7 +10,6 @@ public class Move {
     /**
      * These are needed for all moves.
      */
-    private int pieceType; // The Bitboard that the piece that moved belongs to.
     private int from; // The position the move originated from.
     private int to; // The position the move went to.
     private int capturedPiece; // The piece this move captured. 0 if none. If [defending], then the piece that this is defending.
@@ -31,13 +30,11 @@ public class Move {
     /**
      * Creates a move that goes from [from] to [to] while capturing [capturedPiece].
      *
-     * @param pieceType     the type of piece that is moving.
      * @param from          the position the move originated from.
      * @param to            the position the move went to.
      * @param capturedPiece the piece this move captured. 0 if none.
      */
-    public Move(int pieceType, int from, int to, int capturedPiece) {
-        this.pieceType = pieceType;
+    public Move(int from, int to, int capturedPiece) {
         this.from = from;
         this.to = to;
         this.capturedPiece = capturedPiece;
@@ -53,12 +50,11 @@ public class Move {
     /**
      * Creates a move that goes from [from] to [to] with no capture.
      *
-     * @param pieceType the type of piece that is moving.
      * @param from       the position the move originated from.
      * @param to         the position the move went to.
      */
-    public Move(int pieceType, int from, int to) {
-        this(pieceType, from, to, 0);
+    public Move(int from, int to) {
+        this(from, to, 0);
     }
 
     /**
@@ -117,10 +113,6 @@ public class Move {
         int rank = y + 1;
 
         return "" + file + rank;
-    }
-
-    public int getPieceType() {
-        return pieceType;
     }
 
     public int getFrom() {
@@ -198,7 +190,7 @@ public class Move {
     public boolean equals(Object obj) {
         if (obj instanceof Move) {
             Move m = (Move) obj;
-            return pieceType == m.pieceType && from == m.from && to == m.to && capturedPiece == m.capturedPiece && disableLeftCastle == m.disableLeftCastle && disableRightCastle == m.disableRightCastle && promotionPiece == m.promotionPiece;
+            return from == m.from && to == m.to && capturedPiece == m.capturedPiece && disableLeftCastle == m.disableLeftCastle && disableRightCastle == m.disableRightCastle && promotionPiece == m.promotionPiece;
         }
         return false;
     }
