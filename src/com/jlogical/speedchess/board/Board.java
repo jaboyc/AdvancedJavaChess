@@ -35,10 +35,14 @@ public class Board {
 
     private Stack<Move> moveHistory; // History of previous moves.
 
+    private boolean currPlayer; // The current player.
+
     /**
      * Creates a new board. Generates all bitboards as well.
+     *
+     * @param fen the FEN code to use.
      */
-    public Board() {
+    public Board(String fen) {
         pawns = new long[]{0L, 0L};
         rooks = new long[]{0L, 0L};
         knights = new long[]{0L, 0L};
@@ -50,8 +54,11 @@ public class Board {
         canCastleLeft = new boolean[]{true, true};
 
         moveHistory = new Stack<>();
+        moveHistory.push(new Move(0, -1, -1)); // Add one move to the move history to allow next-move searching.
 
-        initPieceBitboards();
+        currPlayer = true;
+
+        initPieceBitboards(fen);
     }
 
     /**
@@ -222,7 +229,7 @@ public class Board {
         moveHistory.push(move); // Add the move to the board's moveHistory.
 
         // Move the piece in its piece board.
-        int pieceType = getPiece(move.getFrom());
+        int pieceType = move.getPieceType();
         setBitboard(pieceType, Bitboard.clear(getPieceBitboard(pieceType), move.getFrom()));
         setBitboard(pieceType, Bitboard.set(getPieceBitboard(pieceType), move.getTo()));
 
@@ -285,27 +292,15 @@ public class Board {
         Move move = moveHistory.pop(); // Get the most-recently made move.
         move.clearCache();
 
-        // Handle pawn promotion.
-        if (move.getPromotionPiece() != 0) {
-
-            int playerNum = playerBitboardNum(player);
-
-            // Remove the piece and replace it with the given promoted piece.
-            pawns[playerNum] = Bitboard.set(pawns[playerNum], move.getTo());
-
-            // Remove the promoted piece.
-            setBitboard(move.getPromotionPiece(), Bitboard.clear(getPieceBitboard(move.getPromotionPiece()), move.getTo()));
-        }
-
-        // Unmove the piece in its piece board.
-        int pieceType = getPiece(move.getTo());
-        setBitboard(pieceType, Bitboard.clear(getPieceBitboard(pieceType), move.getTo()));
-        setBitboard(pieceType, Bitboard.set(getPieceBitboard(pieceType), move.getFrom()));
-
         // Replace the captured piece.
         if (move.getCapturedPiece() != 0) {
             setBitboard(move.getCapturedPiece(), Bitboard.set(getPieceBitboard(move.getCapturedPiece()), move.getTo()));
         }
+
+        // Unmove the piece in its piece board.
+        int pieceType = move.getPieceType();
+        setBitboard(pieceType, Bitboard.clear(getPieceBitboard(pieceType), move.getTo()));
+        setBitboard(pieceType, Bitboard.set(getPieceBitboard(pieceType), move.getFrom()));
 
         // Handle castling.
         if (move.isRightCastle()) {
@@ -334,6 +329,13 @@ public class Board {
         // Handle disabling castling. Re-enable them.
         if (move.isDisableRightCastle()) canCastleRight[player ? 0 : 1] = true;
         if (move.isDisableLeftCastle()) canCastleLeft[player ? 0 : 1] = true;
+
+        // Handle pawn promotion.
+        if (move.getPromotionPiece() != 0) {
+
+            // Remove the promoted piece.
+            setBitboard(move.getPromotionPiece(), Bitboard.clear(getPieceBitboard(move.getPromotionPiece()), move.getTo()));
+        }
     }
 
     /**
@@ -373,60 +375,90 @@ public class Board {
 
     /**
      * Initializes the bitboards of all the pieces.
+     *
+     * @param fen the FEN code to initialize all the pieces to. If null, sets to the default board.
      */
-    private void initPieceBitboards() {
-        // WHITE
-        // Pawns
-        for (int i = 0; i < 8; i++) {
-            pawns[0] = Bitboard.set(pawns[0], i, 1);
+    private void initPieceBitboards(String fen) {
+
+        if (fen == null) fen = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
+        // Split the FEN to get the separate messages.
+        String[] split = fen.split(" ");
+
+        String pieces = split[0];
+        String[] ranks = pieces.split("/");
+
+        currPlayer = split[1].equals("w");
+
+        // Place the pieces.
+        int pos = 0;
+        for (int i = ranks.length - 1; i >= 0; i--) {
+            for (int j = 0; j < ranks[i].length(); j++) {
+                char c = ranks[i].charAt(j);
+
+                // See if the character is a number. If it is, skip that many positions.
+                try {
+                    int numSkip = Integer.parseInt("" + c);
+                    pos += numSkip;
+                    continue;
+                } catch (Exception ignored) {
+                }
+
+                // Otherwise, place the given piece down.
+                switch (c) {
+                    case 'P':
+                        pawns[0] = Bitboard.set(pawns[0], pos);
+                        break;
+                    case 'p':
+                        pawns[1] = Bitboard.set(pawns[1], pos);
+                        break;
+                    case 'R':
+                        rooks[0] = Bitboard.set(rooks[0], pos);
+                        break;
+                    case 'r':
+                        rooks[1] = Bitboard.set(rooks[1], pos);
+                        break;
+                    case 'N':
+                        knights[0] = Bitboard.set(knights[0], pos);
+                        break;
+                    case 'n':
+                        knights[1] = Bitboard.set(knights[1], pos);
+                        break;
+                    case 'B':
+                        bishops[0] = Bitboard.set(bishops[0], pos);
+                        break;
+                    case 'b':
+                        bishops[1] = Bitboard.set(bishops[1], pos);
+                        break;
+                    case 'Q':
+                        queens[0] = Bitboard.set(queens[0], pos);
+                        break;
+                    case 'q':
+                        queens[1] = Bitboard.set(queens[1], pos);
+                        break;
+                    case 'K':
+                        kings[0] = Bitboard.set(kings[0], pos);
+                        break;
+                    case 'k':
+                        kings[1] = Bitboard.set(kings[1], pos);
+                        break;
+                }
+
+                pos++;
+            }
         }
-
-        // Rooks
-        rooks[0] = Bitboard.set(rooks[0], 0, 0);
-        rooks[0] = Bitboard.set(rooks[0], 7, 0);
-
-        // Knights
-        knights[0] = Bitboard.set(knights[0], 1, 0);
-        knights[0] = Bitboard.set(knights[0], 6, 0);
-
-        // Bishops
-        bishops[0] = Bitboard.set(bishops[0], 2, 0);
-        bishops[0] = Bitboard.set(bishops[0], 5, 0);
-
-        // Queen
-        queens[0] = Bitboard.set(queens[0], 3, 0);
-
-        // King
-        kings[0] = Bitboard.set(kings[0], 4, 0);
-
-        // BLACK
-        // Pawns
-        for (int i = 0; i < 8; i++) {
-            pawns[1] = Bitboard.set(pawns[1], i, 6);
-        }
-
-        // Rooks
-        rooks[1] = Bitboard.set(rooks[1], 0, 7);
-        rooks[1] = Bitboard.set(rooks[1], 7, 7);
-
-        // Knights
-        knights[1] = Bitboard.set(knights[1], 1, 7);
-        knights[1] = Bitboard.set(knights[1], 6, 7);
-
-        // Bishops
-        bishops[1] = Bitboard.set(bishops[1], 2, 7);
-        bishops[1] = Bitboard.set(bishops[1], 5, 7);
-
-        // Queen
-        queens[1] = Bitboard.set(queens[1], 3, 7);
-
-        // King
-        kings[1] = Bitboard.set(kings[1], 4, 7);
-
     }
 
     public Stack<Move> getMoveHistory() {
         return moveHistory;
+    }
+
+    public boolean getCurrPlayer() {
+        return currPlayer;
+    }
+
+    public void setCurrPlayer(boolean currPlayer) {
+        this.currPlayer = currPlayer;
     }
 
     /**

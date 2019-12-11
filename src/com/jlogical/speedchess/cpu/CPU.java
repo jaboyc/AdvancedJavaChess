@@ -13,7 +13,7 @@ public class CPU {
 
     private static final boolean DEBUG = true; // Whether to output debug information as the CPU is thinking.
 
-    private static final int COMPLEXITY = 4; // The number of turns to look ahead to decide its next move.
+    private static final int COMPLEXITY = 3; // The number of turns to look ahead to decide its next move.
 
     private static int count = 0;
 

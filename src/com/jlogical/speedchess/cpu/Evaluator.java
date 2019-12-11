@@ -97,6 +97,10 @@ public class Evaluator {
             // Bonus points for attacks / mobility.
             for (Move move : moves.getMoves()) {
 
+                if(move.getTo()> 64){
+                    System.out.println(Bitboard.format(board.pawns[0]));
+                    System.out.println(move.getPieceType() + " -> " + move);
+                }
                 score += centerDistance(move.getTo()) * CENTER_MOBILITY_BONUS + 5;
 
                 if (move.getCapturedPiece() != 0) {

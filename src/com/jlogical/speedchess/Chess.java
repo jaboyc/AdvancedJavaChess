@@ -19,9 +19,16 @@ public class Chess {
     /**
      * Creates a Chess object.
      */
-    public Chess(boolean... players) {
-        board = new Board();
-        this.players = players;
+    public Chess(boolean player1, boolean player2, String fen) {
+        board = new Board(fen);
+        this.players = new boolean[]{player1, player2};
+    }
+
+    /**
+     * Creates a Chess object.
+     */
+    public Chess(boolean player1, boolean player2){
+        this(player1, player2, null);
     }
 
     /**
@@ -29,10 +36,10 @@ public class Chess {
      */
     public void play() {
 
-        boolean currPlayer = true; // Whether the current player is white.
+        boolean currPlayer = board.getCurrPlayer(); // Whether the current player is white.
 
         // Repeatedly switch turns until checkmate or stalemate.
-        while (/*!board.isCheckMate(currPlayer) && !board.isStaleMate(currPlayer)*/ true) {
+        while (!board.isCheckMate(currPlayer) && !board.isStaleMate(currPlayer)) {
 
             // Print board information out.
             System.out.println(board);
@@ -51,16 +58,17 @@ public class Chess {
 
             // Swap the current player.
             currPlayer = !currPlayer;
+            board.setCurrPlayer(currPlayer);
         }
 
-//        System.out.println(board);
-//
-//        // Print the end condition.
-//        if (board.isCheckMate(currPlayer)) {
-//            System.out.println("===(CHECK MATE)===");
-//        } else {
-//            System.out.println("===(STALE MATE)===");
-//        }
+        System.out.println(board);
+
+        // Print the end condition.
+        if (board.isCheckMate(currPlayer)) {
+            System.out.println("===(CHECK MATE)===");
+        } else {
+            System.out.println("===(STALE MATE)===");
+        }
     }
 
     /**
@@ -71,8 +79,8 @@ public class Chess {
      */
     private Move humanMove(boolean player) {
 
-       // if (board.inCheck(player))
-        //    System.out.println("   [CHECK]");
+        if (board.inCheck(player))
+            System.out.println("   [CHECK]");
 
         // Keep asking for user input until they give a valid move.
         while (true) {
@@ -85,7 +93,7 @@ public class Chess {
             int capturedPiece = board.getPiece(toPos);
 
             // Generate the move from the input.
-            Move move = new Move(fromPos, toPos, capturedPiece);
+            Move move = new Move(board.getPiece(fromPos), fromPos, toPos, capturedPiece);
 
             // If the move is valid, return the move. Otherwise try again.
             List<Move> possibleMoves = MoveGenerator.generateMoves(board, player, true).getMoves();
@@ -174,7 +182,7 @@ public class Chess {
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(false, true);
+        Chess chess = new Chess(false, true, "r1b1kbr1/ppp2qpp/2P2n2/4p3/2B5/1QP5/PP1N1PPP/R1B1K2R b KQq - 0 12");
         chess.play();
     }
 }
