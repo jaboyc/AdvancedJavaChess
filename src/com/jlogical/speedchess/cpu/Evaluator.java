@@ -7,6 +7,7 @@ import com.jlogical.speedchess.moves.Move;
 import com.jlogical.speedchess.moves.Moveset;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import static com.jlogical.speedchess.board.Piece.KING;
 
@@ -19,7 +20,7 @@ public class Evaluator {
     private static final int CENTER_POSITION_BONUS = 8; // Bonus for being positioned in the middle.
     private static final int PAWN_FORWARD_BONUS = 20; // Bonus for being up front for a pawn.
 
-    private static HashMap<Long, Integer> scoreHash = new HashMap<>(10000); // Hash map of all the evaluations of states already looked at.
+    private static LinkedHashMap<Long, Integer> scoreHash = new LinkedHashMap<>(10000); // Hash map of all the evaluations of states already looked at.
 
     /**
      * Evaluates the given board for the given player.

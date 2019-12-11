@@ -182,7 +182,7 @@ public class Chess {
     }
 
     public static void main(String[] args) {
-        Chess chess = new Chess(false, true, "r1b1kbr1/ppp2qpp/2P2n2/4p3/2B5/1QP5/PP1N1PPP/R1B1K2R b KQq - 0 12");
+        Chess chess = new Chess(true, false, "r1b1kbr1/ppp2qpp/2P2n2/4p3/2B5/1QP5/PP1N1PPP/R1B1K2R b KQq - 0 12");
         chess.play();
     }
 }
